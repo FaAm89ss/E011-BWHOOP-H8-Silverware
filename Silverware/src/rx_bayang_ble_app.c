@@ -64,7 +64,7 @@ THE SOFTWARE.
 // You can use letters A to Z, numbers 0 to 9 and some special characters like # / \ - _ etc.
 // Please use only caps lock letters because name is not case sensitive. Avoid using blanks in name!
 
-#define MY_QUAD_NAME "BWHOOP"
+#define MY_QUAD_NAME "DREZA"
 
 // MY_QUAD_ID defines unique ID for MAC address. Leave 127 or replace it with any other value between 0 and 255.
 // Use ONLY values between 0 and 255!
@@ -80,7 +80,7 @@ THE SOFTWARE.
 // BECAUSE THERE IS NO CONCRETE EXPLANATION WHAT ACTUALLY CAUSES BLUETOOTH PROBLEMS IN SOME CASES, I CAN'T GUARANTEE THAT THIS OPTION MIGHT PREVENT THAT,
 // BUT YOU CAN TRY IT (WITH FIXED MAC YOUR QUADCOPTER WILL BE ALWAYS RECOGNIZED AS THE SAME DEVICE WHICH MIGHT PREVENT BLUETOOTH CRASHES)
 // 0 - 255
-#define MY_QUAD_ID 127
+#define MY_QUAD_ID 97
 
 // you can keep the same value for all your quads if you like, but be aware: if you fly them all in the same time or somebody else uses
 // the same MAC ID in their quadcopter firmware, SilverVISE application will have TLM data mixed!

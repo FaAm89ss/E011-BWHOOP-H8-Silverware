@@ -12,7 +12,7 @@
 #define DEGTORAD 0.017453292f
 #define RADTODEG 57.29577951f
 
-#define AUXNUMBER 16
+#define AUXNUMBER 18
 
 #define ROLL 0
 #define PITCH 1
@@ -35,8 +35,12 @@
 */
 
 // defines for bayang protocol radio
-#define CH_ON (AUXNUMBER - 2)
 #define CH_OFF (AUXNUMBER - 1)
+#define CH_ON (AUXNUMBER - 2)
+#define CH_DREZA_1 (AUXNUMBER - 3)
+#define CH_DREZA_2 (AUXNUMBER - 4)
+#define CH_DREZA_3 (AUXNUMBER - 5)
+#define CH_DREZA_4 (AUXNUMBER - 6)
 #define CH_FLIP 0
 #define CH_EXPERT 1
 #define CH_HEADFREE 2
