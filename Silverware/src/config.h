@@ -1,6 +1,18 @@
 #include "defines.h"
 #include "hardware.h"
 
+//*************
+//*************
+
+#define USE_STOCK_TX
+//#define USE_DEVO
+//#define USE_MULTI
+
+#define ENABLE_ARMING
+
+//*************
+//*************
+
 // adjust pids in pid.c file
 
 //**********************************************************************************************************************
@@ -21,8 +33,20 @@
 
 // *************rate in deg/sec
 // *************for acro mode
+
+#ifdef USE_STOCK_TX
+
 #define MAX_RATE 960.0
 #define MAX_RATEYAW 600.0
+
+#endif
+
+#ifndef USE_STOCK_TX
+
+#define MAX_RATE 1400.0
+#define MAX_RATEYAW 1000.0
+
+#endif
 
 // *************max angle for level mode
 #define MAX_ANGLE_HI 70.0f
@@ -57,11 +81,6 @@
 //#define RX_SBUS
 //#define RX_NRF24_BAYANG_TELEMETRY
 
-// *************Transmitter Type Selection
-//#define USE_STOCK_TX
-#define USE_DEVO
-//#define USE_MULTI
-
 // *******************************SWITCH SELECTION*****************************
 // *************CHAN_ON - on always ( all protocols)
 // *************CHAN_OFF - off always ( all protocols)
@@ -71,20 +90,38 @@
 
 //*************Arm switch and Idle Up switch (idle up will behave like betaflight airmode)
 //*************comment out to disable
+#ifdef ENABLE_ARMING
+
 #define ARMING CHAN_5
 #define IDLE_UP CHAN_5
-#define IDLE_THR 0.05f
+#define IDLE_THR 0.00001f
+
+#endif
 
 //*************Assign feature to auxiliary channel.  NOTE - Switching on LEVELMODE is required for any leveling modes to 
 //*************be active.  With LEVELMODE active - MCU will apply RACEMODE if racemode channel is on, HORIZON if horizon 
 //*************channel is on, or racemodeHORIZON if both channels are on - and will be standard LEVELMODE if neither 
 //*************racemode or horizon are switched on.
-#define LEVELMODE CHAN_6
-#define RACEMODE  CHAN_7
-#define HORIZON   CHAN_8
-#define RATES CHAN_ON
-#define LEDS_ON CHAN_ON
 
+#ifndef USE_STOCK_TX
+
+#define LEVELMODE CHAN_5
+#define RACEMODE  CHAN_6
+#define HORIZON   CH_DREZA_1
+#define RATES CH_LOOP_1
+#define LEDS_ON CH_LOOP_2
+
+#endif
+
+#ifdef USE_STOCK_TX
+
+#define LEVELMODE CH_RLL_TRIM
+#define RACEMODE  CH_DREZA_1
+#define HORIZON   CH_DREZA_2
+#define RATES CH_LOOP_1
+#define LEDS_ON CH_LOOP_2
+
+#endif
 
 // *************switch for fpv / other, requires fet
 // *************comment out to disable

@@ -9,6 +9,7 @@ extern int ledcommand;
 extern int ledblink;
 extern int onground;
 extern char aux[AUXNUMBER];
+extern int play_led;
 
 int pid_gestures_used = 0;
 
@@ -68,6 +69,66 @@ void gestures( void)
                   ledcommand = 1;
                   aux[CH_AUX1] = 0;
               }
+							
+							
+							
+							
+              
+            if (command == GESTURE_LDD)
+              {
+                  aux[CH_DREZA_1] = 0;
+                  ledcommand = 1;
+              }
+            if (command == GESTURE_RDD)
+              {
+                  ledcommand = 1;
+                  aux[CH_DREZA_1] = 1;
+              }
+              
+            if (command == GESTURE_LUU)
+              {
+                  aux[CH_DREZA_2] = 0;
+                  ledcommand = 1;
+              }
+            if (command == GESTURE_RUU)
+              {
+                  ledcommand = 1;
+                  aux[CH_DREZA_2] = 1;
+              }
+              
+            if (command == GESTURE_LLL)
+              {
+                  if (aux[CH_LOOP_1] == 1) {
+										aux[CH_LOOP_1] = 0;
+									} else {
+										aux[CH_LOOP_1] = 1;
+									}
+                  ledcommand = 1;
+              }
+            if (command == GESTURE_RRR)
+              {
+                  if (aux[CH_LOOP_1] == 1) {
+										aux[CH_LOOP_2] = 0;
+									} else {
+										aux[CH_LOOP_2] = 1;
+									}
+                  ledcommand = 1;
+              }
+            if (command == GESTURE_RRL)
+              {
+                  if (play_led == 1) {
+										play_led = 0;
+									} else {
+										play_led = 1;
+									}
+                  ledcommand = 1;
+              }
+							
+							
+							
+							
+							
+							
             #ifdef PID_GESTURE_TUNING              
             if ( command >= GESTURE_UDR ) pid_gestures_used = 1;   
               

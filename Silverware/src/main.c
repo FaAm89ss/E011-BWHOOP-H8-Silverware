@@ -110,6 +110,7 @@ char aux[AUXNUMBER] = { 0 ,0 ,0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 
 char lastaux[AUXNUMBER];
 // if an aux channel has just changed
 char auxchange[AUXNUMBER];
+int play_led = 0;
 
 // bind / normal rx mode
 extern int rxmode;
@@ -125,6 +126,9 @@ int arming_release;
 int ledcommand = 0;
 int ledblink = 0;
 unsigned long ledcommandtime = 0;
+	
+// for fun
+extern int play_led;
 
 void failloop( int val);
 #ifdef USE_SERIAL_4WAY_BLHELI_INTERFACE
@@ -180,6 +184,10 @@ aux[CH_ON] = 1;
 #ifdef AUX1_START_ON
 aux[CH_AUX1] = 1;
 #endif
+	
+// bikin led dan high rate default to ON
+aux[CH_LOOP_1] = 1;
+aux[CH_LOOP_2] = 1;
     
     
     #ifdef FLASH_SAVE1
@@ -283,6 +291,9 @@ if ( liberror )
 			failloop(8);
 			// endless loop
 		}
+		
+		if (play_led == 1)
+			ledcommand = 1;
 
         // read gyro and accelerometer data	
 		sixaxis_read();

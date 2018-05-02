@@ -35,6 +35,71 @@
 
 #define GSIZE 7
 
+
+
+
+
+
+
+
+
+// L D D
+const uint8_t commandX1[GSIZE] = {
+	GESTURE_CENTER_IDLE, GESTURE_LEFT, GESTURE_CENTER, GESTURE_DOWN, GESTURE_CENTER, GESTURE_DOWN, GESTURE_CENTER
+};
+// R D D
+const uint8_t commandX2[GSIZE] = {
+	GESTURE_CENTER_IDLE, GESTURE_RIGHT, GESTURE_CENTER, GESTURE_DOWN, GESTURE_CENTER, GESTURE_DOWN, GESTURE_CENTER
+};
+
+
+
+// L U U
+const uint8_t commandX3[GSIZE] = {
+	GESTURE_CENTER_IDLE, GESTURE_LEFT, GESTURE_CENTER, GESTURE_UP, GESTURE_CENTER, GESTURE_UP, GESTURE_CENTER
+};
+// R U U
+const uint8_t commandX4[GSIZE] = {
+	GESTURE_CENTER_IDLE, GESTURE_RIGHT, GESTURE_CENTER, GESTURE_UP, GESTURE_CENTER, GESTURE_UP, GESTURE_CENTER
+};
+
+
+
+// L L L
+const uint8_t commandX5[GSIZE] = {
+	GESTURE_CENTER_IDLE, GESTURE_LEFT, GESTURE_CENTER, GESTURE_LEFT, GESTURE_CENTER, GESTURE_LEFT, GESTURE_CENTER
+};
+// R R R
+const uint8_t commandX6[GSIZE] = {
+	GESTURE_CENTER_IDLE, GESTURE_RIGHT, GESTURE_CENTER, GESTURE_RIGHT, GESTURE_CENTER, GESTURE_RIGHT, GESTURE_CENTER
+};
+// L L R
+const uint8_t commandX7[GSIZE] = {
+	GESTURE_CENTER_IDLE, GESTURE_LEFT, GESTURE_CENTER, GESTURE_LEFT, GESTURE_CENTER, GESTURE_RIGHT, GESTURE_CENTER
+};
+// R R L
+const uint8_t commandX8[GSIZE] = {
+	GESTURE_CENTER_IDLE, GESTURE_RIGHT, GESTURE_CENTER, GESTURE_RIGHT, GESTURE_CENTER, GESTURE_LEFT, GESTURE_CENTER
+};
+// R L L
+const uint8_t commandX9[GSIZE] = {
+	GESTURE_CENTER_IDLE, GESTURE_RIGHT, GESTURE_CENTER, GESTURE_LEFT, GESTURE_CENTER, GESTURE_LEFT, GESTURE_CENTER
+};
+// L R R
+const uint8_t commandX10[GSIZE] = {
+	GESTURE_CENTER_IDLE, GESTURE_LEFT, GESTURE_CENTER, GESTURE_RIGHT, GESTURE_CENTER, GESTURE_RIGHT, GESTURE_CENTER
+};
+
+
+
+
+
+
+
+
+
+
+
 // L L D
 const uint8_t command1[GSIZE] = {
 	GESTURE_CENTER_IDLE, GESTURE_LEFT, GESTURE_CENTER, GESTURE_LEFT, GESTURE_CENTER, GESTURE_DOWN, GESTURE_CENTER
@@ -265,6 +330,129 @@ int gesture_sequence(int currentgesture)
 		    }
 			#endif
 
+				
+			
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+			/*
+				* custom command
+				*/
+				
+		  if (check_command ( &gbuffer[0] , &commandX1[0] ) )
+		    {
+			    // command X1 - L D D
+
+			    //change buffer so it does not trigger again
+			    gbuffer[1] = GESTURE_LDD;
+			    return GESTURE_LDD;
+		    }
+
+		
+		  if (check_command ( &gbuffer[0] , &commandX2[0] ))
+		    {
+			    // command X2 - R D D
+
+			    //change buffer so it does not trigger again
+			    gbuffer[1] = GESTURE_RDD;
+			    return GESTURE_RDD;
+		    }
+				
+		  if (check_command ( &gbuffer[0] , &commandX3[0] ) )
+		    {
+			    // command X3 - L U U
+
+			    //change buffer so it does not trigger again
+			    gbuffer[1] = GESTURE_LUU;
+			    return GESTURE_LUU;
+		    }
+
+		
+		  if (check_command ( &gbuffer[0] , &commandX4[0] ))
+		    {
+			    // command X4 - R U U
+
+			    //change buffer so it does not trigger again
+			    gbuffer[1] = GESTURE_RUU;
+			    return GESTURE_RUU;
+		    }
+				
+				
+		  if (check_command ( &gbuffer[0] , &commandX5[0] ) )
+		    {
+			    // command X5 - L L L
+
+			    //change buffer so it does not trigger again
+			    gbuffer[1] = GESTURE_LLL;
+			    return GESTURE_LLL;
+		    }
+
+		
+		  if (check_command ( &gbuffer[0] , &commandX6[0] ))
+		    {
+			    // command X6 - R R R
+
+			    //change buffer so it does not trigger again
+			    gbuffer[1] = GESTURE_RRR;
+			    return GESTURE_RRR;
+		    }
+
+		
+		  if (check_command ( &gbuffer[0] , &commandX7[0] ))
+		    {
+			    // command X7 - L L R
+
+			    //change buffer so it does not trigger again
+			    gbuffer[1] = GESTURE_LLR;
+			    return GESTURE_LLR;
+		    }
+
+		
+		  if (check_command ( &gbuffer[0] , &commandX8[0] ))
+		    {
+			    // command X8 - R R L
+
+			    //change buffer so it does not trigger again
+			    gbuffer[1] = GESTURE_RRL;
+			    return GESTURE_RRL;
+		    }
+
+		
+		  if (check_command ( &gbuffer[0] , &commandX9[0] ))
+		    {
+			    // command X9 - L R R
+
+			    //change buffer so it does not trigger again
+			    gbuffer[1] = GESTURE_LRR;
+			    return GESTURE_LRR;
+		    }
+
+		
+		  if (check_command ( &gbuffer[0] , &commandX10[0] ))
+		    {
+			    // command X10 - R L L
+
+			    //change buffer so it does not trigger again
+			    gbuffer[1] = GESTURE_RLL;
+			    return GESTURE_RLL;
+		    }
+				
+				
+				
+				
+				
+				
+				
+				
 
 	  }
 

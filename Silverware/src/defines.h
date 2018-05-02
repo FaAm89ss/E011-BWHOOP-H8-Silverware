@@ -39,8 +39,8 @@
 #define CH_ON (AUXNUMBER - 2)
 #define CH_DREZA_1 (AUXNUMBER - 3)
 #define CH_DREZA_2 (AUXNUMBER - 4)
-#define CH_DREZA_3 (AUXNUMBER - 5)
-#define CH_DREZA_4 (AUXNUMBER - 6)
+#define CH_LOOP_1 (AUXNUMBER - 5) // channel on/off loop
+#define CH_LOOP_2 (AUXNUMBER - 6) // channel on/off loop
 #define CH_FLIP 0
 #define CH_EXPERT 1
 #define CH_HEADFREE 2
