@@ -1,19 +1,21 @@
 [![Build Status](https://travis-ci.org/silver13/BoldClash-BWHOOP-B-03.svg?branch=master)](https://travis-ci.org/silver13/BoldClash-BWHOOP-B-03)
 
+
+
+
+## NEW Functionality via Gesture to increase roll, pitch and yaw rate :
+
+- RIGHT RIGHT RIGHT -> Increase Roll & Pitch Expo By ACRO_EXPO_ADJUST_MULTIPLIER (default .10f)
+
+- LEFT LEFT LEFT -> Decrease Roll & Pitch Expo By ACRO_EXPO_ADJUST_MULTIPLIER (default .10f)
+
+- RIGHT RIGHT UP -> Increase Yaw Expo By ACRO_EXPO_ADJUST_MULTIPLIER (default .10f)
+
+- LEFT LEFT UP -> Decrease Yaw Expo By ACRO_EXPO_ADJUST_MULTIPLIER (default .10f)
+
+
 ## NotFastEnuf Notes - Bwhoop B03 Silverware modified to work on BWHOOP, E011, or H8mini_blue_board.
 Last major update 3.13.18
-
-
-
-### NEW Functionality via Gesture to increase roll, pitch and yaw rate :
-
-RIGHT RIGHT RIGHT -> Increase Expo By ACRO_EXPO_ADJUST_MULTIPLIER (default .10f)
-
-LEFT LEFT LEFT -> Decrease Expo By ACRO_EXPO_ADJUST_MULTIPLIER (default .10f)
-
-
-
-
 
 Testing a new layout for config.h  - feel free to let me know what you think.  Your feedback is appreciated. 
 
