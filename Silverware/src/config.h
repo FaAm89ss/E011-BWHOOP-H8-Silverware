@@ -49,7 +49,7 @@
 #endif
 
 // *************max angle for level mode
-#define MAX_ANGLE_HI 70.0f
+#define MAX_ANGLE_HI 45.0f
 
 // ************* low rates multiplier if rates are assigned to a channel
 #define LOW_RATES_MULTI 0.5f
@@ -74,9 +74,9 @@
 //#define RX_H7_PROTOCOL
 //#define RX_BAYANG_PROTOCOL
 //#define RX_BAYANG_PROTOCOL_TELEMETRY
-#define RX_BAYANG_PROTOCOL_TELEMETRY_AUTOBIND
+//#define RX_BAYANG_PROTOCOL_TELEMETRY_AUTOBIND
 //#define RX_BAYANG_PROTOCOL_BLE_BEACON
-//#define RX_BAYANG_BLE_APP
+#define RX_BAYANG_BLE_APP
 //#define RX_CX10BLUE_PROTOCOL
 //#define RX_SBUS
 //#define RX_NRF24_BAYANG_TELEMETRY
