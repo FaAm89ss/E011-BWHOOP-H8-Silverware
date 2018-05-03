@@ -12,11 +12,17 @@ extern float * pids_array[3];
 
 extern float hardcoded_pid_identifier;
 
+extern float acro_expo_roll;
+extern float acro_expo_pitch;
+extern float acro_expo_yaw;
+
 
 #define FMC_HEADER 0x12AA0001
 
 float initial_pid_identifier = -10;
+float initial_expo_identifier = -10;
 float saved_pid_identifier;
+float saved_expo_identifier;
 
 
 float flash_get_hard_coded_pid_identifier( void) {
@@ -60,6 +66,12 @@ void flash_save( void) {
     fmc_write_float(addresscount++, accelcal[0]);
     fmc_write_float(addresscount++, accelcal[1]);
     fmc_write_float(addresscount++, accelcal[2]);
+	
+    fmc_write_float(addresscount++, initial_expo_identifier);
+		fmc_write_float(addresscount++, acro_expo_pitch);
+		fmc_write_float(addresscount++, acro_expo_roll);
+		fmc_write_float(addresscount++, acro_expo_yaw);
+	
 
    
 #ifdef RX_BAYANG_PROTOCOL_TELEMETRY_AUTOBIND
@@ -112,8 +124,16 @@ void flash_load( void) {
 
     accelcal[0] = fmc_read_float(addresscount++ );
     accelcal[1] = fmc_read_float(addresscount++ );
-    accelcal[2] = fmc_read_float(addresscount++ );  
-
+    accelcal[2] = fmc_read_float(addresscount++ );
+		
+		saved_expo_identifier = fmc_read_float(addresscount++ );
+		if (  saved_expo_identifier == initial_expo_identifier ) {
+			acro_expo_pitch = fmc_read_float(addresscount++ );
+			acro_expo_roll = fmc_read_float(addresscount++ );
+			acro_expo_yaw = fmc_read_float(addresscount++ );
+		} else {
+			addresscount+=3;
+		}
        
  #ifdef RX_BAYANG_PROTOCOL_TELEMETRY_AUTOBIND  
 extern char rfchannel[4];

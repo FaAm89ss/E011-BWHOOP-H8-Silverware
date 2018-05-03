@@ -84,7 +84,6 @@ void imu_init(void);
 extern void flash_load( void);
 extern void flash_hard_coded_pid_identifier(void);
 
-
 // looptime in seconds
 float looptime;
 // filtered battery in volts
@@ -111,6 +110,9 @@ char lastaux[AUXNUMBER];
 // if an aux channel has just changed
 char auxchange[AUXNUMBER];
 int play_led = 0;
+float acro_expo_roll = 0.7;
+float acro_expo_pitch = 0.7;
+float acro_expo_yaw = 0.3;
 
 // bind / normal rx mode
 extern int rxmode;
@@ -129,6 +131,9 @@ unsigned long ledcommandtime = 0;
 	
 // for fun
 extern int play_led;
+extern float acro_expo_roll;
+extern float acro_expo_pitch;
+extern float acro_expo_yaw;
 
 void failloop( int val);
 #ifdef USE_SERIAL_4WAY_BLHELI_INTERFACE

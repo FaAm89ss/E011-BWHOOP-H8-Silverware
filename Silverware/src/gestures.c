@@ -11,6 +11,13 @@ extern int onground;
 extern char aux[AUXNUMBER];
 extern int play_led;
 
+extern float acro_expo_roll;
+extern float acro_expo_pitch;
+extern float acro_expo_yaw;
+
+extern void flash_save( void);
+extern void flash_load( void);
+
 int pid_gestures_used = 0;
 
 void gestures( void)
@@ -40,8 +47,8 @@ void gestures( void)
                 #endif
                 
                 #ifdef FLASH_SAVE1
-			    extern void flash_save( void);
-                extern void flash_load( void);
+			    
+                
                 flash_save( );
                 flash_load( );
                 #endif
@@ -96,7 +103,7 @@ void gestures( void)
                   aux[CH_DREZA_2] = 1;
               }
               
-            if (command == GESTURE_LLL)
+            if (command == GESTURE_RLL)
               {
                   if (aux[CH_LOOP_1] == 1) {
 										aux[CH_LOOP_1] = 0;
@@ -105,7 +112,7 @@ void gestures( void)
 									}
                   ledcommand = 1;
               }
-            if (command == GESTURE_RRR)
+            if (command == GESTURE_LRR)
               {
                   if (aux[CH_LOOP_1] == 1) {
 										aux[CH_LOOP_2] = 0;
@@ -123,6 +130,52 @@ void gestures( void)
 									}
                   ledcommand = 1;
               }
+							
+            if (command == GESTURE_RRR)
+              {
+								if (acro_expo_roll + ACRO_EXPO_ADJUST_MULTIPLIER <= 1) {
+                  acro_expo_roll += ACRO_EXPO_ADJUST_MULTIPLIER;
+                  ledcommand = 1;
+								}
+								if (acro_expo_pitch + ACRO_EXPO_ADJUST_MULTIPLIER <= 1) {
+                  acro_expo_pitch += ACRO_EXPO_ADJUST_MULTIPLIER;
+                  ledcommand = 1;
+								}
+              }
+							
+            if (command == GESTURE_LLL)
+              {
+								if (acro_expo_roll - ACRO_EXPO_ADJUST_MULTIPLIER >= 0) {
+                  acro_expo_roll -= ACRO_EXPO_ADJUST_MULTIPLIER;
+                  ledcommand = 1;
+								}
+								if (acro_expo_pitch - ACRO_EXPO_ADJUST_MULTIPLIER >= 0) {
+                  acro_expo_pitch -= ACRO_EXPO_ADJUST_MULTIPLIER;
+                  ledcommand = 1;
+								}
+              }
+							
+            if (command == GESTURE_RRU)
+              {
+								if (acro_expo_yaw + ACRO_EXPO_ADJUST_MULTIPLIER <= 1) {
+                  acro_expo_yaw += ACRO_EXPO_ADJUST_MULTIPLIER;
+                  ledcommand = 1;
+								}
+              }
+							
+            if (command == GESTURE_LLU)
+              {
+								if (acro_expo_yaw - ACRO_EXPO_ADJUST_MULTIPLIER >= 0) {
+                  acro_expo_yaw -= ACRO_EXPO_ADJUST_MULTIPLIER;
+                  ledcommand = 1;
+								}
+              }
+									
+						if (ledcommand == 1 && (command == GESTURE_RRR || command == GESTURE_LLL ||command == GESTURE_RRU || command == GESTURE_LLU)) {
+							flash_save( );
+							flash_load( );
+						}
+
 							
 							
 							

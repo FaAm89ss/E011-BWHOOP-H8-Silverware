@@ -8,6 +8,8 @@
 //#define USE_DEVO
 //#define USE_MULTI
 
+#define ACRO_EXPO_ADJUST_MULTIPLIER 0.10f
+
 #define ENABLE_ARMING
 
 //*************
@@ -23,9 +25,9 @@
 // *************uncomment BWHOOP define for bwhoop, bwhoop pro, E011C Santa Edition, and Beta FPV Lite Flight Controllers
 // *************uncomment E011 define for E011 flight Controller
 // *************uncomment H8mini_blue_board for the H8 mini flight controller with blue circuit board
-#define BWHOOP
+//#define BWHOOP
 //#define E011
-//#define H8mini_blue_board
+#define H8mini_blue_board
 //#define Alienwhoop_ZERO  // requires defining RX_SBUS radio protocol
 
 //**********************************************************************************************************************
@@ -36,15 +38,15 @@
 
 #ifdef USE_STOCK_TX
 
-#define MAX_RATE 960.0
+#define MAX_RATE 720.0
 #define MAX_RATEYAW 600.0
 
 #endif
 
 #ifndef USE_STOCK_TX
 
-#define MAX_RATE 1400.0
-#define MAX_RATEYAW 1000.0
+#define MAX_RATE 1000.0
+#define MAX_RATEYAW 800.0
 
 #endif
 
@@ -56,9 +58,9 @@
 
 // *************EXPO from 0.00 to 1.00 , 0 = no exp
 // *************positive = less sensitive near center 
-#define ACRO_EXPO_ROLL 0.85
-#define ACRO_EXPO_PITCH 0.85
-#define ACRO_EXPO_YAW 0.60
+//#define acro_expo_roll 0.85
+//#define acro_expo_pitch 0.85
+//#define acro_expo_yaw 0.60
 
 #define ANGLE_EXPO_ROLL 0.55
 #define ANGLE_EXPO_PITCH 0.0
@@ -94,7 +96,7 @@
 
 #define ARMING CHAN_5
 #define IDLE_UP CHAN_5
-#define IDLE_THR 0.00001f
+#define IDLE_THR 0.00003f
 
 #endif
 
@@ -105,12 +107,25 @@
 
 #ifndef USE_STOCK_TX
 
+#ifdef ENABLE_ARMING
+
+#define LEVELMODE CHAN_6
+#define RACEMODE  CH_DREZA_1
+#define HORIZON   CH_DREZA_2
+#define RATES CH_LOOP_1
+#define LEDS_ON CH_LOOP_2
+
+#endif
+
+#ifndef ENABLE_ARMING
+
 #define LEVELMODE CHAN_5
 #define RACEMODE  CHAN_6
 #define HORIZON   CH_DREZA_1
 #define RATES CH_LOOP_1
 #define LEDS_ON CH_LOOP_2
 
+#endif
 #endif
 
 #ifdef USE_STOCK_TX
