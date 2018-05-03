@@ -3,6 +3,18 @@
 ## NotFastEnuf Notes - Bwhoop B03 Silverware modified to work on BWHOOP, E011, or H8mini_blue_board.
 Last major update 3.13.18
 
+
+
+### NEW Functionality via Gesture to increase roll, pitch and yaw rate :
+
+RIGHT RIGHT RIGHT -> Increase Expo By ACRO_EXPO_ADJUST_MULTIPLIER (default .10f)
+
+LEFT LEFT LEFT -> Decrease Expo By ACRO_EXPO_ADJUST_MULTIPLIER (default .10f)
+
+
+
+
+
 Testing a new layout for config.h  - feel free to let me know what you think.  Your feedback is appreciated. 
 
 There are two main steps to prep this file for flash.  The first will be in config.h and the second will be in pid.c file.
