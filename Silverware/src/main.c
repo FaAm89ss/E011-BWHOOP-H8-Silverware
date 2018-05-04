@@ -110,9 +110,9 @@ char lastaux[AUXNUMBER];
 // if an aux channel has just changed
 char auxchange[AUXNUMBER];
 int play_led = 0;
-float acro_expo_roll = 0.7;
-float acro_expo_pitch = 0.7;
-float acro_expo_yaw = 0.3;
+float acro_expo_roll = ACRO_EXPO_ROLL;
+float acro_expo_pitch = ACRO_EXPO_PITCH;
+float acro_expo_yaw = ACRO_EXPO_YAW;
 
 // bind / normal rx mode
 extern int rxmode;

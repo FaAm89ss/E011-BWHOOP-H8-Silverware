@@ -58,9 +58,9 @@
 
 // *************EXPO from 0.00 to 1.00 , 0 = no exp
 // *************positive = less sensitive near center 
-//#define acro_expo_roll 0.85
-//#define acro_expo_pitch 0.85
-//#define acro_expo_yaw 0.60
+#define ACRO_EXPO_ROLL 0.85
+#define ACRO_EXPO_PITCH 0.85
+#define ACRO_EXPO_YAW 0.60
 
 #define ANGLE_EXPO_ROLL 0.55
 #define ANGLE_EXPO_PITCH 0.0
