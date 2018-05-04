@@ -187,12 +187,12 @@ clk_init();
 aux[CH_ON] = 1;	
 	
 #ifdef AUX1_START_ON
-aux[CH_AUX1] = 1;
+aux[CH_GES_1] = 1;
 #endif
 	
 // bikin led dan high rate default to ON
-aux[CH_LOOP_1] = 1;
-aux[CH_LOOP_2] = 1;
+aux[CH_GES_LOOP_1] = 1;
+aux[CH_GES_LOOP_2] = 1;
     
     
     #ifdef FLASH_SAVE1

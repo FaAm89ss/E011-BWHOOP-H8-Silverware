@@ -68,13 +68,13 @@ void gestures( void)
               
             if (command == GESTURE_RRD)
               {
-                  aux[CH_AUX1] = 1;
+                  aux[CH_GES_1] = 1;
                   ledcommand = 1;
               }
             if (command == GESTURE_LLD)
               {
                   ledcommand = 1;
-                  aux[CH_AUX1] = 0;
+                  aux[CH_GES_1] = 0;
               }
 							
 							
@@ -83,41 +83,41 @@ void gestures( void)
               
             if (command == GESTURE_LDD)
               {
-                  aux[CH_DREZA_1] = 0;
+                  aux[CH_GES_2] = 0;
                   ledcommand = 1;
               }
             if (command == GESTURE_RDD)
               {
                   ledcommand = 1;
-                  aux[CH_DREZA_1] = 1;
+                  aux[CH_GES_2] = 1;
               }
               
             if (command == GESTURE_LUU)
               {
-                  aux[CH_DREZA_2] = 0;
+                  aux[CH_GES_3] = 0;
                   ledcommand = 1;
               }
             if (command == GESTURE_RUU)
               {
                   ledcommand = 1;
-                  aux[CH_DREZA_2] = 1;
+                  aux[CH_GES_3] = 1;
               }
               
             if (command == GESTURE_RLL)
               {
-                  if (aux[CH_LOOP_1] == 1) {
-										aux[CH_LOOP_1] = 0;
+                  if (aux[CH_GES_LOOP_1] == 1) {
+										aux[CH_GES_LOOP_1] = 0;
 									} else {
-										aux[CH_LOOP_1] = 1;
+										aux[CH_GES_LOOP_1] = 1;
 									}
                   ledcommand = 1;
               }
             if (command == GESTURE_LRR)
               {
-                  if (aux[CH_LOOP_1] == 1) {
-										aux[CH_LOOP_2] = 0;
+                  if (aux[CH_GES_LOOP_2] == 1) {
+										aux[CH_GES_LOOP_2] = 0;
 									} else {
-										aux[CH_LOOP_2] = 1;
+										aux[CH_GES_LOOP_2] = 1;
 									}
                   ledcommand = 1;
               }

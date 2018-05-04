@@ -104,16 +104,26 @@
 //*************be active.  With LEVELMODE active - MCU will apply RACEMODE if racemode channel is on, HORIZON if horizon 
 //*************channel is on, or racemodeHORIZON if both channels are on - and will be standard LEVELMODE if neither 
 //*************racemode or horizon are switched on.
+//************* 
+//************* CHANNEL GESTURE MAPPING
+//************* 
+//************* CH_GES_1 : on R R D, off L L D
+//************* CH_GES_2 : on R D D, off L D D
+//************* CH_GES_3 : on R U U, off L U U
+//************* CH_GES_LOOP_1 : on/off R L L
+//************* CH_GES_LOOP_2 : on/off L R R
+//************* 
+//************* CHAN_6 is speed button in E011 or H36 stock tx
 
 #ifndef USE_STOCK_TX
 
 #ifdef ENABLE_ARMING
 
 #define LEVELMODE CHAN_6
-#define RACEMODE  CH_DREZA_1
-#define HORIZON   CH_DREZA_2
-#define RATES CH_LOOP_1
-#define LEDS_ON CH_LOOP_2
+#define RACEMODE  CH_GES_2
+#define HORIZON   CH_GES_3
+#define RATES CH_GES_LOOP_1
+#define LEDS_ON CH_GES_LOOP_2
 
 #endif
 
@@ -121,9 +131,9 @@
 
 #define LEVELMODE CHAN_5
 #define RACEMODE  CHAN_6
-#define HORIZON   CH_DREZA_1
-#define RATES CH_LOOP_1
-#define LEDS_ON CH_LOOP_2
+#define HORIZON   CH_GES_2
+#define RATES CH_GES_LOOP_1
+#define LEDS_ON CH_GES_LOOP_2
 
 #endif
 #endif
@@ -131,10 +141,10 @@
 #ifdef USE_STOCK_TX
 
 #define LEVELMODE CH_RLL_TRIM
-#define RACEMODE  CH_DREZA_1
-#define HORIZON   CH_DREZA_2
-#define RATES CH_LOOP_1
-#define LEDS_ON CH_LOOP_2
+#define RACEMODE  CH_GES_2
+#define HORIZON   CH_GES_3
+#define RATES CH_GES_LOOP_1
+#define LEDS_ON CH_GES_LOOP_2
 
 #endif
 

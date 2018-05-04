@@ -213,7 +213,7 @@ void rx_init()
 // always off (CH_OFF) channel set 0
     aux[AUXNUMBER - 1] = 0;
 #ifdef AUX1_START_ON
-    aux[CH_AUX1] = 1;
+    aux[CH_GES_1] = 1;
 #endif
 
 
