@@ -41,9 +41,9 @@ THE SOFTWARE.
 
 //7mm Whoop  NotFastEnuf "Default Pids" -kalman gyro at 90hz, D 2nd at 100hz, motor filter at 90hz  (These pids work nicely with new or HV batteries and fresh motors)
 //      	                 ROLL       PITCH     YAW
-float pidkp[PIDNUMBER] = { 26.5e-2 , 26.5e-2  , 8.5e-1 }; 
-float pidki[PIDNUMBER] = { 16e-1  , 16e-1 , 13e-1 };	
-float pidkd[PIDNUMBER] = {11.1e-1 , 11.1e-1  , 4.9e-1 };
+//float pidkp[PIDNUMBER] = { 26.5e-2 , 26.5e-2  , 8.5e-1 }; 
+//float pidki[PIDNUMBER] = { 16e-1  , 16e-1 , 13e-1 };	
+//float pidkd[PIDNUMBER] = {11.1e-1 , 11.1e-1  , 4.9e-1 };
 
 //6mm Whoop -kalman gyro at 90hz, D 2nd at 100hz, motor filter at 90hz  
 //                         ROLL       PITCH     YAW
@@ -81,6 +81,11 @@ float pidkd[PIDNUMBER] = {11.1e-1 , 11.1e-1  , 4.9e-1 };
 //float pidki[PIDNUMBER] = { 12e-1  , 12e-1 , 12.0e-1 };	
 //float pidkd[PIDNUMBER] = {17.5e-1 , 17.5e-1  , 7e-1 };
 
+// 716 19000kv lipo 250mah HV
+
+float pidkp[PIDNUMBER] = { 21.7e-2 , 21.7e-2  , 9.5e-1 }; 
+float pidki[PIDNUMBER] = { 11e-1  , 11e-1 , 8e-1 };	
+float pidkd[PIDNUMBER] = {8.9e-1 , 8.9e-1  , 0e-1 };	
 
 //************************************Setpoint Weight****************************************
 // "setpoint weighting" 0.0 - 1.0 where 1.0 = normal pid

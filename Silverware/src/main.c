@@ -113,6 +113,7 @@ int play_led = 0;
 float acro_expo_roll = ACRO_EXPO_ROLL;
 float acro_expo_pitch = ACRO_EXPO_PITCH;
 float acro_expo_yaw = ACRO_EXPO_YAW;
+float throttle_expo = THROTTLE_EXPO;
 
 // bind / normal rx mode
 extern int rxmode;
@@ -134,6 +135,7 @@ extern int play_led;
 extern float acro_expo_roll;
 extern float acro_expo_pitch;
 extern float acro_expo_yaw;
+extern float throttle_expo;
 
 void failloop( int val);
 #ifdef USE_SERIAL_4WAY_BLHELI_INTERFACE

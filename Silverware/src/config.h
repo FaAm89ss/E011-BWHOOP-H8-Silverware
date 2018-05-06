@@ -8,7 +8,13 @@
 //#define USE_DEVO
 //#define USE_MULTI
 
+#define LIPO_HV
+
 #define ACRO_EXPO_ADJUST_MULTIPLIER 0.10f
+#define THROTTLE_EXPO_ADJUST_MULTIPLIER 0.10f
+
+#define ENABLE_THROTTLE_EXPO
+#define THROTTLE_EXPO 1.0f
 
 #define ENABLE_ARMING
 
@@ -26,8 +32,8 @@
 // *************uncomment E011 define for E011 flight Controller
 // *************uncomment H8mini_blue_board for the H8 mini flight controller with blue circuit board
 //#define BWHOOP
-//#define E011
-#define H8mini_blue_board
+#define E011
+//#define H8mini_blue_board
 //#define Alienwhoop_ZERO  // requires defining RX_SBUS radio protocol
 
 //**********************************************************************************************************************
@@ -45,8 +51,8 @@
 
 #ifndef USE_STOCK_TX
 
-#define MAX_RATE 1000.0
-#define MAX_RATEYAW 800.0
+#define MAX_RATE 1400.0
+#define MAX_RATEYAW 1000.0
 
 #endif
 
@@ -96,7 +102,7 @@
 
 #define ARMING CHAN_5
 #define IDLE_UP CHAN_5
-#define IDLE_THR 0.00003f
+#define IDLE_THR 0.00001f
 
 #endif
 
@@ -175,7 +181,12 @@
 //#define STOP_LOWBATTERY
 
 // *************voltage to start warning
+#ifdef LIPO_HV
+#define VBATTLOW 3.6
+#endif
+#ifndef LIPO_HV
 #define VBATTLOW 3.5
+#endif
 
 // *************compensation for battery voltage vs throttle drop
 #define VDROP_FACTOR 0.7
@@ -187,13 +198,23 @@
 
 // *************lower throttle when battery below treshold - forced landing low voltage cutoff
 //#define LVC_LOWER_THROTTLE
+#ifdef LIPO_HV
+#define LVC_LOWER_THROTTLE_VOLTAGE 3.40
+#define LVC_LOWER_THROTTLE_VOLTAGE_RAW 2.80
+#define LVC_LOWER_THROTTLE_KP 3.1
+// *************automatic voltage telemetry correction/calibration factor - change the values below if voltage telemetry is inaccurate
+#define ACTUAL_BATTERY_VOLTAGE 4.35
+#define REPORTED_TELEMETRY_VOLTAGE 4.35
+#endif
+
+#ifndef LIPO_HV
 #define LVC_LOWER_THROTTLE_VOLTAGE 3.30
 #define LVC_LOWER_THROTTLE_VOLTAGE_RAW 2.70
 #define LVC_LOWER_THROTTLE_KP 3.0
-
 // *************automatic voltage telemetry correction/calibration factor - change the values below if voltage telemetry is inaccurate
 #define ACTUAL_BATTERY_VOLTAGE 4.20
 #define REPORTED_TELEMETRY_VOLTAGE 4.20
+#endif
 
 
 
@@ -246,10 +267,10 @@
 // *************is very noise sensative so D term specifically has to be lowered and gyro/d filtering may need to be increased.
 // *************reccomendation right now is to leave boost at or below 2, drop your p gains a few points, then cut your D in half and 
 // *************retune it back up to where it feels good.  I'm finding about 60 to 65% of my previous D value seems to work.
-//#define TORQUE_BOOST 0.5
+#define TORQUE_BOOST 0.5
 
 // *************makes throttle feel more poppy - can intensify small throttle imbalances visible in FPV if factor is set too high
-//#define THROTTLE_TRANSIENT_COMPENSATION 
+#define THROTTLE_TRANSIENT_COMPENSATION 
 #define THROTTLE_TRANSIENT_COMPENSATION_FACTOR 4.0 
  
 // *************throttle angle compensation in level mode
@@ -262,8 +283,8 @@
 #define MIX_THROTTLE_REDUCTION_PERCENT 10
 //#define MIX_INCREASE_THROTTLE
 
-//#define MIX_LOWER_THROTTLE_3
-#define MIX_INCREASE_THROTTLE_3
+#define MIX_LOWER_THROTTLE_3
+//#define MIX_INCREASE_THROTTLE_3
 
 // *************invert yaw pid for "PROPS OUT" configuration
 //#define INVERT_YAW_PID
@@ -336,8 +357,13 @@
 // disable inbuilt expo functions
 //#define DISABLE_EXPO
 
+#ifndef USE_STOCK_TX
 #define DISABLE_FLIP_SEQUENCER
-#define STARTFLIP CHAN_OFF
+#endif
+
+#ifdef USE_STOCK_TX
+#define STARTFLIP CH_FLIP
+#endif
 
 // level mode "manual" trims ( in degrees)
 // pitch positive forward

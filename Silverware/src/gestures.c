@@ -14,6 +14,7 @@ extern int play_led;
 extern float acro_expo_roll;
 extern float acro_expo_pitch;
 extern float acro_expo_yaw;
+extern float throttle_expo;
 
 extern void flash_save( void);
 extern void flash_load( void);
@@ -170,8 +171,24 @@ void gestures( void)
                   ledcommand = 1;
 								}
               }
+							
+            if (command == GESTURE_UUD)
+              {
+								if (throttle_expo + THROTTLE_EXPO_ADJUST_MULTIPLIER <= 1) {
+                  throttle_expo += THROTTLE_EXPO_ADJUST_MULTIPLIER;
+                  ledcommand = 1;
+								}
+              }
+							
+            if (command == GESTURE_DDU)
+              {
+								if (throttle_expo - THROTTLE_EXPO_ADJUST_MULTIPLIER >= 0) {
+                  throttle_expo -= THROTTLE_EXPO_ADJUST_MULTIPLIER;
+                  ledcommand = 1;
+								}
+              }
 									
-						if (ledcommand == 1 && (command == GESTURE_RRR || command == GESTURE_LLL ||command == GESTURE_RRU || command == GESTURE_LLU)) {
+						if (ledcommand == 1 && (command == GESTURE_RRR || command == GESTURE_LLL ||command == GESTURE_RRU || command == GESTURE_LLU || command == GESTURE_UUD || command == GESTURE_DDU)) {
 							flash_save( );
 							flash_load( );
 						}

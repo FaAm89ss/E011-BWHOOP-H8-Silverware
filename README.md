@@ -3,7 +3,15 @@
 
 
 
-## NEW Functionality via Gesture to increase roll, pitch and yaw expo rate :
+## NEW Functionality via Gesture :
+
+### Increase/Decrease throttle expo rate :
+
+- UP UP DOWN -> Increase Roll & Pitch Expo By ACRO_EXPO_ADJUST_MULTIPLIER (default .10f)
+
+- DOWN DOWN UP -> Decrease Roll & Pitch Expo By ACRO_EXPO_ADJUST_MULTIPLIER (default .10f)
+
+### Increase/Decrease roll, pitch and yaw expo rate :
 
 - RIGHT RIGHT RIGHT -> Increase Roll & Pitch Expo By ACRO_EXPO_ADJUST_MULTIPLIER (default .10f)
 

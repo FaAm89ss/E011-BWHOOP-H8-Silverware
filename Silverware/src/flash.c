@@ -15,6 +15,7 @@ extern float hardcoded_pid_identifier;
 extern float acro_expo_roll;
 extern float acro_expo_pitch;
 extern float acro_expo_yaw;
+extern float throttle_expo;
 
 
 #define FMC_HEADER 0x12AA0001
@@ -71,6 +72,7 @@ void flash_save( void) {
 		fmc_write_float(addresscount++, acro_expo_pitch);
 		fmc_write_float(addresscount++, acro_expo_roll);
 		fmc_write_float(addresscount++, acro_expo_yaw);
+		fmc_write_float(addresscount++, throttle_expo);
 	
 
    
@@ -131,8 +133,9 @@ void flash_load( void) {
 			acro_expo_pitch = fmc_read_float(addresscount++ );
 			acro_expo_roll = fmc_read_float(addresscount++ );
 			acro_expo_yaw = fmc_read_float(addresscount++ );
+			throttle_expo = fmc_read_float(addresscount++ );
 		} else {
-			addresscount+=3;
+			addresscount+=4;
 		}
        
  #ifdef RX_BAYANG_PROTOCOL_TELEMETRY_AUTOBIND  

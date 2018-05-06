@@ -25,7 +25,9 @@ enum gestures_enum{
 		GESTURE_RLL,
 		GESTURE_LRR,
     GESTURE_LLU,
-    GESTURE_RRU
+    GESTURE_RRU,
+    GESTURE_UUD,
+    GESTURE_DDU
 };
 
 

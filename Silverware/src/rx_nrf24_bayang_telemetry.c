@@ -440,6 +440,10 @@ static int decodepacket(void)
 								rx[1] = rcexpo(rx[1], acro_expo_pitch);
 								rx[2] = rcexpo(rx[2], acro_expo_yaw);
 							}
+
+#ifdef ENABLE_THROTTLE_EXPO
+rx[3] = rcexpo(rx[3], throttle_expo);
+#endif
 #endif
 
 
