@@ -159,7 +159,7 @@ rx[3] = rcexpo(rx[3], throttle_expo);
 			
 	  aux[2] = (rxdata[17] & 0x01)?1:0; // rates mid
 		
-		for ( int i = 0 ; i < AUXNUMBER - 2 ; i++)
+		for ( int i = 0 ; i < AUXNUMBER ; i++)
 		{
 			auxchange[i] = 0;
 			if ( lastaux[i] != aux[i] ) auxchange[i] = 1;

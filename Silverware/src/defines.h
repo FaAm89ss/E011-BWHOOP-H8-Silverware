@@ -12,7 +12,7 @@
 #define DEGTORAD 0.017453292f
 #define RADTODEG 57.29577951f
 
-#define AUXNUMBER 18
+#define AUXNUMBER 14
 
 #define ROLL 0
 #define PITCH 1

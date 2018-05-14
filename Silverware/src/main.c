@@ -105,7 +105,7 @@ float rx[4];
 
 // holds auxilliary channels
 // the last 2 are always on and off respectively
-char aux[AUXNUMBER] = { 0 ,0 ,0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0};
+char aux[AUXNUMBER + 6] = { 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0};
 char lastaux[AUXNUMBER];
 // if an aux channel has just changed
 char auxchange[AUXNUMBER];

@@ -207,9 +207,9 @@ void rx_init()
 
 	
 // always on (CH_ON) channel set 1
-aux[AUXNUMBER - 2] = 1;
+aux[AUXNUMBER + 2] = 1;
 // always off (CH_OFF) channel set 0
-aux[AUXNUMBER - 1] = 0;
+aux[AUXNUMBER + 1] = 0;
 #ifdef AUX1_START_ON
 aux[CH_GES_1] = 1;
 #endif
@@ -1042,7 +1042,7 @@ char trims[4];
 
 
 
-			for ( int i = 0 ; i < AUXNUMBER - 2 ; i++)
+			for ( int i = 0 ; i < AUXNUMBER ; i++)
 			{
 				auxchange[i] = 0;
 				if ( lastaux[i] != aux[i] ) auxchange[i] = 1;
