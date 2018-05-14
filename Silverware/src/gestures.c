@@ -8,7 +8,7 @@
 extern int ledcommand;
 extern int ledblink;
 extern int onground;
-extern char aux[AUXNUMBER];
+extern char aux[AUXNUMBER + 6];
 extern int play_led;
 
 extern float acro_expo_roll;

@@ -42,9 +42,9 @@ THE SOFTWARE.
 
 
 extern float rx[4];
-extern char aux[AUXNUMBER];
-extern char lastaux[AUXNUMBER];
-extern char auxchange[AUXNUMBER];
+extern char aux[AUXNUMBER + 6];
+extern char lastaux[AUXNUMBER + 6];
+extern char auxchange[AUXNUMBER + 6];
 
 
 void writeregs ( uint8_t data[] , uint8_t size )

@@ -4,9 +4,9 @@
 //*************
 //*************
 
-#define USE_STOCK_TX
+//#define USE_STOCK_TX
 //#define USE_DEVO
-//#define USE_MULTI
+#define USE_MULTI
 
 #define LIPO_HV
 
@@ -31,8 +31,8 @@
 // *************uncomment BWHOOP define for bwhoop, bwhoop pro, E011C Santa Edition, and Beta FPV Lite Flight Controllers
 // *************uncomment E011 define for E011 flight Controller
 // *************uncomment H8mini_blue_board for the H8 mini flight controller with blue circuit board
-//#define BWHOOP
-#define E011
+#define BWHOOP
+//#define E011
 //#define H8mini_blue_board
 //#define Alienwhoop_ZERO  // requires defining RX_SBUS radio protocol
 

@@ -35,12 +35,12 @@
 */
 
 // defines for bayang protocol radio
-#define CH_OFF (AUXNUMBER - 1)
-#define CH_ON (AUXNUMBER - 2)
-#define CH_GES_2 (AUXNUMBER - 3)
-#define CH_GES_3 (AUXNUMBER - 4)
-#define CH_GES_LOOP_1 (AUXNUMBER - 5) // channel on/off loop
-#define CH_GES_LOOP_2 (AUXNUMBER - 6) // channel on/off loop
+#define CH_OFF (AUXNUMBER)
+#define CH_ON (AUXNUMBER + 1)
+#define CH_GES_2 (AUXNUMBER + 2)
+#define CH_GES_3 (AUXNUMBER + 3)
+#define CH_GES_LOOP_1 (AUXNUMBER + 4) // channel on/off loop
+#define CH_GES_LOOP_2 (AUXNUMBER + 5) // channel on/off loop
 #define CH_FLIP 0
 #define CH_EXPERT 1
 #define CH_HEADFREE 2

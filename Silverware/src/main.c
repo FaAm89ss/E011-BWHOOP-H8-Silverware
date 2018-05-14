@@ -106,9 +106,9 @@ float rx[4];
 // holds auxilliary channels
 // the last 2 are always on and off respectively
 char aux[AUXNUMBER + 6] = { 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0};
-char lastaux[AUXNUMBER];
+char lastaux[AUXNUMBER + 6];
 // if an aux channel has just changed
-char auxchange[AUXNUMBER];
+char auxchange[AUXNUMBER + 6];
 int play_led = 0;
 float acro_expo_roll = ACRO_EXPO_ROLL;
 float acro_expo_pitch = ACRO_EXPO_PITCH;

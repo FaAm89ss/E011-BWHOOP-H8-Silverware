@@ -40,9 +40,9 @@
 
 extern float rx[4];
 
-extern char aux[AUXNUMBER];
-extern char lastaux[AUXNUMBER];
-extern char auxchange[AUXNUMBER];
+extern char aux[AUXNUMBER + 6];
+extern char lastaux[AUXNUMBER + 6];
+extern char auxchange[AUXNUMBER + 6];
 
 
 #define H7_FLIP_MASK  0x80 // right shoulder (3D flip switch), resets after aileron or elevator has moved and came back to neutral

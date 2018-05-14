@@ -62,9 +62,9 @@ THE SOFTWARE.
 #ifdef RX_BAYANG_PROTOCOL_TELEMETRY
 
 extern float rx[4];
-extern char aux[AUXNUMBER];
-extern char lastaux[AUXNUMBER];
-extern char auxchange[AUXNUMBER];
+extern char aux[AUXNUMBER + 6];
+extern char lastaux[AUXNUMBER + 6];
+extern char auxchange[AUXNUMBER + 6];
 
 
 char lasttrim[4];
@@ -92,9 +92,9 @@ void rx_init()
 
 
 // always on (CH_ON) channel set 1
-    aux[AUXNUMBER] = 1;
+    aux[AUXNUMBER + 1] = 1;
 // always off (CH_OFF) channel set 0
-    aux[AUXNUMBER + 1] = 0;
+    aux[AUXNUMBER] = 0;
 #ifdef AUX1_START_ON
     aux[CH_GES_1] = 1;
 #endif

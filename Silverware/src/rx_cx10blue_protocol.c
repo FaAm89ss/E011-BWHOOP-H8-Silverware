@@ -44,9 +44,9 @@ THE SOFTWARE.
 #define PAYLOAD_LENGHT 19
 
 extern float rx[4];
-extern char aux[AUXNUMBER];
-extern char lastaux[AUXNUMBER];
-extern char auxchange[AUXNUMBER];
+extern char aux[AUXNUMBER + 6];
+extern char lastaux[AUXNUMBER + 6];
+extern char auxchange[AUXNUMBER + 6];
 
 int rxmode = 0;
 int failsafe = 0;
