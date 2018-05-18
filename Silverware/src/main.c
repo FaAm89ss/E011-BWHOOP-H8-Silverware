@@ -114,6 +114,7 @@ float acro_expo_roll = ACRO_EXPO_ROLL;
 float acro_expo_pitch = ACRO_EXPO_PITCH;
 float acro_expo_yaw = ACRO_EXPO_YAW;
 float throttle_expo = THROTTLE_EXPO;
+float idlethr = DEFAULT_IDLE_THR;
 
 // bind / normal rx mode
 extern int rxmode;
@@ -136,6 +137,7 @@ extern float acro_expo_roll;
 extern float acro_expo_pitch;
 extern float acro_expo_yaw;
 extern float throttle_expo;
+extern float idlethr;
 
 void failloop( int val);
 #ifdef USE_SERIAL_4WAY_BLHELI_INTERFACE

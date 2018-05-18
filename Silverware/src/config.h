@@ -8,7 +8,7 @@
 //#define USE_DEVO
 #define USE_MULTI
 
-#define LIPO_HV
+//#define LIPO_HV
 
 #define ACRO_EXPO_ADJUST_MULTIPLIER 0.10f
 #define THROTTLE_EXPO_ADJUST_MULTIPLIER 0.10f
@@ -102,7 +102,8 @@
 
 #define ARMING CHAN_5
 #define IDLE_UP CHAN_5
-#define IDLE_THR 0.00001f
+#define IDLE_THR_MULTIPLIER 0.1f
+#define DEFAULT_IDLE_THR 0.0001f
 
 #endif
 
@@ -126,8 +127,8 @@
 #ifdef ENABLE_ARMING
 
 #define LEVELMODE CHAN_6
-#define RACEMODE  CH_GES_2
-#define HORIZON   CH_GES_3
+#define RACEMODE  CHAN_7
+#define HORIZON   CHAN_8
 #define RATES CH_GES_LOOP_1
 #define LEDS_ON CH_GES_LOOP_2
 
@@ -135,9 +136,9 @@
 
 #ifndef ENABLE_ARMING
 
-#define LEVELMODE CHAN_5
-#define RACEMODE  CHAN_6
-#define HORIZON   CH_GES_2
+#define LEVELMODE CH_GES_1
+#define RACEMODE  CH_GES_2
+#define HORIZON   CH_GES_3
 #define RATES CH_GES_LOOP_1
 #define LEDS_ON CH_GES_LOOP_2
 
@@ -165,7 +166,7 @@
 #define BUZZER_ENABLE CHAN_OFF
 
 // *************start in level mode for toy tx.
-//#define AUX1_START_ON
+#define AUX1_START_ON
 
 // *************automatically remove center bias in toy tx ( needs throttle off for 1 second )
 //#define STOCK_TX_AUTOCENTER

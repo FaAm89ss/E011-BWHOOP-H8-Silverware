@@ -15,6 +15,7 @@ extern float acro_expo_roll;
 extern float acro_expo_pitch;
 extern float acro_expo_yaw;
 extern float throttle_expo;
+extern float idlethr;
 
 extern void flash_save( void);
 extern void flash_load( void);
@@ -124,11 +125,12 @@ void gestures( void)
               }
             if (command == GESTURE_RRL)
               {
-                  if (play_led == 1) {
-										play_led = 0;
-									} else {
-										play_led = 1;
-									}
+                  idlethr += IDLE_THR_MULTIPLIER;
+                  ledcommand = 1;
+              }
+            if (command == GESTURE_LLR)
+              {
+									idlethr -= IDLE_THR_MULTIPLIER;
                   ledcommand = 1;
               }
 							
@@ -188,7 +190,10 @@ void gestures( void)
 								}
               }
 									
-						if (ledcommand == 1 && (command == GESTURE_RRR || command == GESTURE_LLL ||command == GESTURE_RRU || command == GESTURE_LLU || command == GESTURE_UUD || command == GESTURE_DDU)) {
+						if (ledcommand == 1 && (
+								command == GESTURE_RRR || command == GESTURE_LLL ||command == GESTURE_RRU || 
+								command == GESTURE_LLU || command == GESTURE_UUD || command == GESTURE_DDU ||
+								command == GESTURE_LLR || command == GESTURE_RRL)) {
 							flash_save( );
 							flash_load( );
 						}

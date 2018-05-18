@@ -45,6 +45,7 @@ int idle_state;
 extern int armed_state;
 extern int in_air;
 extern int arming_release;
+extern float idlethr;
 
 extern float rx[];
 extern float gyro[3];
@@ -226,10 +227,6 @@ pid_precalc();
 		idle_state = 0;
 	}else{ idle_state = 1;}
 #endif
-	
-#ifndef IDLE_THR
-	#define IDLE_THR .05f
-#endif
 
 if (armed_state == 0){                                     										//disarmed - indicate craft is not in the air and kill throttle
 	throttle = 0;
@@ -241,7 +238,7 @@ if (armed_state == 0){                                     										//disarmed 
 				if ( rx[3] < 0.05f ) throttle = 0;                            											//kill throttle at bottom w/small deadband
 				else throttle = (rx[3] - 0.05f)*1.05623158f;                 												//scale throttle for rest of the stick   
 	 }else{ 																																							//if idle up feature is on
-		throttle =  (float) IDLE_THR + rx[3] * (1.0f - (float) IDLE_THR);											  //establish idle up throttle mapping
+		throttle =  (float) idlethr + rx[3] * (1.0f - (float) idlethr);											  //establish idle up throttle mapping
 		if ((rx[3] > THROTTLE_SAFETY) && (in_air == 0)) in_air = 1; 																				//indicate change to airborne                					 		
 	}	
 }
