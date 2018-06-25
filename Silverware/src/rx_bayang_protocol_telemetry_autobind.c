@@ -66,6 +66,11 @@ extern char aux[AUXNUMBER + 6];
 extern char lastaux[AUXNUMBER + 6];
 extern char auxchange[AUXNUMBER + 6];
 
+extern double acro_expo_roll;
+extern double acro_expo_pitch;
+extern double acro_expo_yaw;
+extern double throttle_expo;
+
 
 char lasttrim[4];
 
@@ -77,6 +82,7 @@ int rx_bind_load = 0;
 
 int rxmode = 0;
 int rf_chan = 0;
+int rx_state = 0;
 
 unsigned long autobindtime = 0;
 int autobind_inhibit = 0;
@@ -99,11 +105,11 @@ void rx_init()
 
 
 // always on (CH_ON) channel set 1
-    aux[AUXNUMBER + 1] = 1;
+    aux[AUXNUMBER - 2] = 1;
 // always off (CH_OFF) channel set 0
-    aux[AUXNUMBER] = 0;
+    aux[AUXNUMBER - 1] = 0;
 #ifdef AUX1_START_ON
-    aux[CH_GES_1] = 1;
+    aux[CH_AUX1] = 1;
 #endif
 
 
@@ -219,6 +225,7 @@ writeregs( regs_1e , sizeof(regs_1e) );
 
           xn_writereg(0x25, rfchannel[rf_chan]);    // Set channel frequency 
           rxmode = RX_MODE_NORMAL;
+ 
           if ( telemetry_enabled ) packet_period = PACKET_PERIOD_TELEMETRY;
     }
     else
@@ -404,22 +411,7 @@ static int decodepacket(void)
                     ((rxdata[8] & 0x0003) * 256 +
                      rxdata[9]) * 0.000976562f;
 
-#ifndef DISABLE_EXPO
-							if (aux[LEVELMODE]){
-								if (aux[RACEMODE]){
-									rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
-									rx[1] = rcexpo(rx[1], acro_expo_pitch);
-									rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
-								}else{
-									rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
-									rx[1] = rcexpo(rx[1], ANGLE_EXPO_PITCH);
-									rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);}
-							}else{
-								rx[0] = rcexpo(rx[0], acro_expo_roll);
-								rx[1] = rcexpo(rx[1], acro_expo_pitch);
-								rx[2] = rcexpo(rx[2], acro_expo_yaw);
-							}
-#endif
+
 
 
 
@@ -454,9 +446,26 @@ static int decodepacket(void)
 
                 aux[CH_RTH] = (rxdata[2] & 0x01) ? 1 : 0;   // rth channel
 
+							if (aux[LEVELMODE]){
+								if (aux[RACEMODE] && !aux[HORIZON]){
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
+									if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
+								}else if (aux[HORIZON]){
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], acro_expo_roll);
+									if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
+								}else{
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
+									if ( ANGLE_EXPO_PITCH > 0.01) rx[1] = rcexpo(rx[1], ANGLE_EXPO_PITCH);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);}
+							}else{
+								if ( acro_expo_roll > 0.01) rx[0] = rcexpo(rx[0], acro_expo_roll);
+								if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+								if ( acro_expo_yaw > 0.01) rx[2] = rcexpo(rx[2], acro_expo_yaw);
+							}
 
-
-                for (int i = 0; i < AUXNUMBER; i++)
+                for (int i = 0; i < AUXNUMBER - 2; i++)
                   {
                       auxchange[i] = 0;
                       if (lastaux[i] != aux[i])
@@ -534,7 +543,9 @@ void checkrx(void)
                       writeregs( rxaddr_regs , sizeof(rxaddr_regs) );
 
                       xn_writereg(0x25, rfchannel[rf_chan]);    // Set channel frequency 
+		//									rx_state++;
                       rxmode = RX_MODE_NORMAL;
+											 
 
 #ifdef SERIAL
                       printf(" BIND \n");
@@ -542,7 +553,7 @@ void checkrx(void)
                   }
             }
           else
-            {                   // normal mode  
+            {               // normal mode  
 #ifdef RXDEBUG
                 channelcount[rf_chan]++;
                 packettime = gettime() - lastrxtime;
@@ -579,7 +590,7 @@ void checkrx(void)
                       failcount++;
 #endif
                   }
-
+							rx_state = 1; 
             }                   // end normal rx mode
 
       }                         // end packet received

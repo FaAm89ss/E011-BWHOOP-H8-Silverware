@@ -40,7 +40,7 @@ THE SOFTWARE.
 #ifdef RX_BAYANG_PROTOCOL
 
 
-
+int rx_state = 1;
 extern float rx[4];
 extern char aux[AUXNUMBER + 6];
 extern char lastaux[AUXNUMBER + 6];
@@ -146,25 +146,7 @@ static int decodepacket( void)
 		// throttle		
 			rx[3] = ( (rxdata[8]&0x0003) * 256 + rxdata[9] ) * 0.000976562;
 		
-#ifndef DISABLE_EXPO
-							if (aux[LEVELMODE]){
-								if (aux[RACEMODE]){
-									rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
-									rx[1] = rcexpo(rx[1], acro_expo_pitch);
-									rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
-								}else{
-									rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
-									rx[1] = rcexpo(rx[1], ANGLE_EXPO_PITCH);
-									rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);}
-							}else{
-								rx[0] = rcexpo(rx[0], acro_expo_roll);
-								rx[1] = rcexpo(rx[1], acro_expo_pitch);
-								rx[2] = rcexpo(rx[2], acro_expo_yaw);
-							}
-#ifdef ENABLE_THROTTLE_EXPO
-rx[3] = rcexpo(rx[3], throttle_expo);
-#endif
-#endif
+
 
 		// trims are 50% of controls at max		
 	// trims are not used because they interfere with dynamic trims feature of devo firmware
@@ -203,8 +185,30 @@ static char lasttrim[2];
 
 			    aux[CH_RTH] = (rxdata[2] & 0x01) ? 1 : 0;	// rth channel
 
+							if (aux[LEVELMODE]){
+								if (aux[RACEMODE] && !aux[HORIZON]){
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
+									if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
+								}else if (aux[HORIZON]){
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], acro_expo_roll);
+									if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
+								}else{
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
+									if ( ANGLE_EXPO_PITCH > 0.01) rx[1] = rcexpo(rx[1], ANGLE_EXPO_PITCH);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);}
+							}else{
+								if ( acro_expo_roll > 0.01) rx[0] = rcexpo(rx[0], acro_expo_roll);
+								if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+								if ( acro_expo_yaw > 0.01) rx[2] = rcexpo(rx[2], acro_expo_yaw);
+							}
+							
+							#ifdef ENABLE_THROTTLE_EXPO
+							rx[3] = rcexpo(rx[3], throttle_expo);
+							#endif
 
-			for ( int i = 0 ; i < AUXNUMBER ; i++)
+			for ( int i = 0 ; i < AUXNUMBER - 2 ; i++)
 			{
 				auxchange[i] = 0;
 				if ( lastaux[i] != aux[i] ) auxchange[i] = 1;
@@ -223,6 +227,7 @@ return 0; // first byte different
 	int rxaddress[5];
 	int rxmode = 0;
 	int chan = 0;
+ 
 
 void nextchannel()
 {
@@ -308,7 +313,7 @@ void checkrx(void)
 			      }
 		    }
 		  else
-		    {		// normal mode  
+		    {		                // normal mode 
 #ifdef RXDEBUG
 			    channelcount[chan]++;
 			    packettime = gettime() - lastrxtime;
@@ -343,9 +348,9 @@ unsigned long temptime = gettime();
 				      failcount++;
 #endif
 			      }
-
+					rx_state = 1;
 		    }		// end normal rx mode
-
+			
 	  }			// end packet received
 
 		

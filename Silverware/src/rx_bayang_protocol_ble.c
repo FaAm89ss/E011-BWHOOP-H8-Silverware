@@ -57,7 +57,7 @@ extern char auxchange[AUXNUMBER + 6];
 	int rxaddress[5];
 	int rxmode = 0;
 	int rf_chan = 0;
-
+  int rx_state = 0;
 	
 void bleinit( void);
 
@@ -83,7 +83,34 @@ void rx_init()
 {
 
 #ifdef RADIO_XN297L
-	
+
+#ifndef TX_POWER
+#define TX_POWER 7
+#endif
+ 	
+// Gauss filter amplitude - lowest
+static uint8_t demodcal[2] = { 0x39 , B00000001 };
+writeregs( demodcal , sizeof(demodcal) );
+
+// powerup defaults
+//static uint8_t rfcal2[7] = { 0x3a , 0x45 , 0x21 , 0xef , 0xac , 0x3a , 0x50};
+//writeregs( rfcal2 , sizeof(rfcal2) );
+
+static uint8_t rfcal2[7] = { 0x3a , 0x45 , 0x21 , 0xef , 0x2c , 0x5a , 0x50};
+writeregs( rfcal2 , sizeof(rfcal2) );
+
+static uint8_t regs_1f[6] = { 0x3f , 0x0a, 0x6d , 0x67 , 0x9c , 0x46 };
+writeregs( regs_1f , sizeof(regs_1f) );
+
+
+static uint8_t regs_1e[4] = { 0x3e , 0xf6 , 0x37 , 0x5d };
+writeregs( regs_1e , sizeof(regs_1e) );
+
+//#define XN_TO_RX B10001111
+//#define XN_TO_TX B10000010
+//#define XN_POWER B00000001|((TX_POWER&7)<<3)
+
+
 #define XN_TO_RX B10001111
 #define XN_TO_TX B10000010
 #define XN_POWER B00111111
@@ -587,26 +614,7 @@ static int decodepacket( void)
 		// throttle		
 			rx[3] = ( (rxdata[8]&0x0003) * 256 + rxdata[9] ) * 0.000976562;
 		
-#ifndef DISABLE_EXPO
-							if (aux[LEVELMODE]){
-								if (aux[RACEMODE]){
-									rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
-									rx[1] = rcexpo(rx[1], acro_expo_pitch);
-									rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
-								}else{
-									rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
-									rx[1] = rcexpo(rx[1], ANGLE_EXPO_PITCH);
-									rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);}
-							}else{
-								rx[0] = rcexpo(rx[0], acro_expo_roll);
-								rx[1] = rcexpo(rx[1], acro_expo_pitch);
-								rx[2] = rcexpo(rx[2], acro_expo_yaw);
-							}
 
-#ifdef ENABLE_THROTTLE_EXPO
-rx[3] = rcexpo(rx[3], throttle_expo);
-#endif
-#endif
 		if  (rxdata[1] != 0xfa) 
 		{// low rates
 			for ( int i = 0 ; i <3; i++)
@@ -629,8 +637,27 @@ rx[3] = rcexpo(rx[3], throttle_expo);
 			    aux[CH_HEADFREE] = (rxdata[2] & 0x02) ? 1 : 0;
 
 			    aux[CH_RTH] = (rxdata[2] & 0x01) ? 1 : 0;	// rth channel
+					
+							if (aux[LEVELMODE]){
+								if (aux[RACEMODE] && !aux[HORIZON]){
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
+									if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
+								}else if (aux[HORIZON]){
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], acro_expo_roll);
+									if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
+								}else{
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
+									if ( ANGLE_EXPO_PITCH > 0.01) rx[1] = rcexpo(rx[1], ANGLE_EXPO_PITCH);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);}
+							}else{
+								if ( acro_expo_roll > 0.01) rx[0] = rcexpo(rx[0], acro_expo_roll);
+								if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+								if ( acro_expo_yaw > 0.01) rx[2] = rcexpo(rx[2], acro_expo_yaw);
+							}		
 
-			for ( int i = 0 ; i < AUXNUMBER ; i++)
+			for ( int i = 0 ; i < AUXNUMBER - 2 ; i++)
 			{
 				auxchange[i] = 0;
 				if ( lastaux[i] != aux[i] ) auxchange[i] = 1;
@@ -751,7 +778,7 @@ unsigned long temptime = gettime();
 			      }
 
 		    }		// end normal rx mode
-
+			rx_state = 1;
 	  }			// end packet received
 
 	beacon_sequence();

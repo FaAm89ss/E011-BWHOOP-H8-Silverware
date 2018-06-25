@@ -116,6 +116,7 @@ const uint8_t commandX14[GSIZE] = {
 
 
 
+
 // L L D
 const uint8_t command1[GSIZE] = {
 	GESTURE_CENTER_IDLE, GESTURE_LEFT, GESTURE_CENTER, GESTURE_LEFT, GESTURE_CENTER, GESTURE_DOWN, GESTURE_CENTER
@@ -262,7 +263,7 @@ int gesture_sequence(int currentgesture)
 	if (currentgesture != gbuffer[0])
 	  {			// add to queue
 
-		  for (int i = GSIZE; i >= 1; i--)
+		  for (int i = GSIZE - 1; i >= 1; i--)
 		    {
 			    gbuffer[i] = gbuffer[i - 1];
 
@@ -501,14 +502,7 @@ int gesture_sequence(int currentgesture)
 			    gbuffer[1] = GESTURE_UUD;
 			    return GESTURE_UUD;
 		    }
-				
-				
-				
-				
-				
-				
-				
-				
+
 
 	  }
 

@@ -72,7 +72,7 @@ char rfchannel[4];
 int rxaddress[5];
 int rxmode = 0;
 int rf_chan = 0;
-
+int rx_state = 0;
 
 
 void writeregs(uint8_t data[], uint8_t size)
@@ -92,11 +92,11 @@ void rx_init()
 
 
 // always on (CH_ON) channel set 1
-    aux[AUXNUMBER + 1] = 1;
+    aux[AUXNUMBER - 2] = 1;
 // always off (CH_OFF) channel set 0
-    aux[AUXNUMBER] = 0;
+    aux[AUXNUMBER - 1] = 0;
 #ifdef AUX1_START_ON
-    aux[CH_GES_1] = 1;
+    aux[CH_AUX1] = 1;
 #endif
 
 
@@ -113,10 +113,21 @@ writeregs( demodcal , sizeof(demodcal) );
 // powerup defaults
 //static uint8_t rfcal2[7] = { 0x3a , 0x45 , 0x21 , 0xef , 0xac , 0x3a , 0x50};
 //writeregs( rfcal2 , sizeof(rfcal2) );
-	
+
+static uint8_t rfcal2[7] = { 0x3a , 0x45 , 0x21 , 0xef , 0x2c , 0x5a , 0x50};
+writeregs( rfcal2 , sizeof(rfcal2) );
+
+static uint8_t regs_1f[6] = { 0x3f , 0x0a, 0x6d , 0x67 , 0x9c , 0x46 };
+writeregs( regs_1f , sizeof(regs_1f) );
+
+
+static uint8_t regs_1e[4] = { 0x3e , 0xf6 , 0x37 , 0x5d };
+writeregs( regs_1e , sizeof(regs_1e) );
+
 #define XN_TO_RX B10001111
 #define XN_TO_TX B10000010
 #define XN_POWER B00000001|((TX_POWER&7)<<3)
+
 
 #endif
 
@@ -362,22 +373,9 @@ static int decodepacket(void)
                     ((rxdata[8] & 0x0003) * 256 +
                      rxdata[9]) * 0.000976562f;
 
-#ifndef DISABLE_EXPO
-							if (aux[LEVELMODE]){
-								if (aux[RACEMODE]){
-									rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
-									rx[1] = rcexpo(rx[1], acro_expo_pitch);
-									rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
-								}else{
-									rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
-									rx[1] = rcexpo(rx[1], ANGLE_EXPO_PITCH);
-									rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);}
-							}else{
-								rx[0] = rcexpo(rx[0], acro_expo_roll);
-								rx[1] = rcexpo(rx[1], acro_expo_pitch);
-								rx[2] = rcexpo(rx[2], acro_expo_yaw);
-							}
-#endif
+
+
+
 
 
 
@@ -412,9 +410,27 @@ static int decodepacket(void)
 
                 aux[CH_RTH] = (rxdata[2] & 0x01) ? 1 : 0;   // rth channel
 
+							if (aux[LEVELMODE]){
+								if (aux[RACEMODE] && !aux[HORIZON]){
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
+									if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
+								}else if (aux[HORIZON]){
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], acro_expo_roll);
+									if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
+								}else{
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
+									if ( ANGLE_EXPO_PITCH > 0.01) rx[1] = rcexpo(rx[1], ANGLE_EXPO_PITCH);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);}
+							}else{
+								if ( acro_expo_roll > 0.01) rx[0] = rcexpo(rx[0], acro_expo_roll);
+								if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+								if ( acro_expo_yaw > 0.01) rx[2] = rcexpo(rx[2], acro_expo_yaw);
+							}
 
 
-                for (int i = 0; i < AUXNUMBER; i++)
+                for (int i = 0; i < AUXNUMBER - 2; i++)
                   {
                       auxchange[i] = 0;
                       if (lastaux[i] != aux[i])
@@ -535,7 +551,7 @@ void checkrx(void)
                       failcount++;
 #endif
                   }
-
+							rx_state = 1;
             }                   // end normal rx mode
 
       }                         // end packet received

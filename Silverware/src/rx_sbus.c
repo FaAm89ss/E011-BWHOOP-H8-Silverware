@@ -112,15 +112,11 @@ void sbus_init(void)
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-#ifdef Alienwhoop_ZERO
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
-    GPIO_Init(GPIOA, &GPIO_InitStructure); 
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource3 , GPIO_AF_1);
-#else	
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;
-    GPIO_Init(GPIOA, &GPIO_InitStructure); 	
-	  GPIO_PinAFConfig(GPIOA, GPIO_PinSource14 , GPIO_AF_1);
-#endif    
+
+    GPIO_InitStructure.GPIO_Pin = SERIAL_RX_PIN;
+    GPIO_Init(SERIAL_RX_PORT, &GPIO_InitStructure); 
+    GPIO_PinAFConfig(SERIAL_RX_PORT, SERIAL_RX_SOURCE , SERIAL_RX_CHANNEL);
+
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
 
     USART_InitTypeDef USART_InitStructure;
@@ -177,7 +173,6 @@ if ( framestarted == 0)
             {
                 // start detected
                 framestart = rx_start;
-                rx_start = rx_start;
                 framestarted = 1;  
                 stat_framestartcount++; 
             break;                
@@ -315,26 +310,26 @@ if ( frame_received )
         rx[3] = 0.000610128f * channels[2]; 
         
         if ( rx[3] > 1 ) rx[3] = 1;
-     #ifndef DISABLE_EXPO
+				
 							if (aux[LEVELMODE]){
-								if (aux[RACEMODE]){
-									rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
-									rx[1] = rcexpo(rx[1], acro_expo_pitch);
-									rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
+								if (aux[RACEMODE] && !aux[HORIZON]){
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
+									if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
+								}else if (aux[HORIZON]){
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], acro_expo_roll);
+									if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
 								}else{
-									rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
-									rx[1] = rcexpo(rx[1], ANGLE_EXPO_PITCH);
-									rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);}
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
+									if ( ANGLE_EXPO_PITCH > 0.01) rx[1] = rcexpo(rx[1], ANGLE_EXPO_PITCH);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);}
 							}else{
-								rx[0] = rcexpo(rx[0], acro_expo_roll);
-								rx[1] = rcexpo(rx[1], acro_expo_pitch);
-								rx[2] = rcexpo(rx[2], acro_expo_yaw);
+								if ( acro_expo_roll > 0.01) rx[0] = rcexpo(rx[0], acro_expo_roll);
+								if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+								if ( acro_expo_yaw > 0.01) rx[2] = rcexpo(rx[2], acro_expo_yaw);
 							}
-
-#ifdef ENABLE_THROTTLE_EXPO
-rx[3] = rcexpo(rx[3], throttle_expo);
-#endif
-#endif   
+							
 			aux[CHAN_5] = (channels[4] > 993) ? 1 : 0;
 		    aux[CHAN_6] = (channels[5] > 993) ? 1 : 0;
 		    aux[CHAN_7] = (channels[6] > 993) ? 1 : 0;

@@ -84,6 +84,7 @@ void imu_init(void);
 extern void flash_load( void);
 extern void flash_hard_coded_pid_identifier(void);
 
+
 // looptime in seconds
 float looptime;
 // filtered battery in volts
@@ -110,32 +111,27 @@ char lastaux[AUXNUMBER + 6];
 // if an aux channel has just changed
 char auxchange[AUXNUMBER + 6];
 int play_led = 0;
-float acro_expo_roll = ACRO_EXPO_ROLL;
-float acro_expo_pitch = ACRO_EXPO_PITCH;
-float acro_expo_yaw = ACRO_EXPO_YAW;
-float throttle_expo = THROTTLE_EXPO;
-
+double acro_expo_roll = ACRO_EXPO_ROLL;
+double acro_expo_pitch = ACRO_EXPO_PITCH;
+double acro_expo_yaw = ACRO_EXPO_YAW;
+double throttle_expo = THROTTLE_EXPO;
+	
 // bind / normal rx mode
 extern int rxmode;
-// failsafe on / off 
+// failsafe on / off
 extern int failsafe;
 extern float hardcoded_pid_identifier;
 extern int onground;
 int in_air;
 int armed_state;
 int arming_release;
+int binding_while_armed = 1;
+int rx_ready = 0;
 
 // for led flash on gestures
 int ledcommand = 0;
 int ledblink = 0;
 unsigned long ledcommandtime = 0;
-	
-// for fun
-extern int play_led;
-extern float acro_expo_roll;
-extern float acro_expo_pitch;
-extern float acro_expo_yaw;
-extern float throttle_expo;
 
 void failloop( int val);
 #ifdef USE_SERIAL_4WAY_BLHELI_INTERFACE
@@ -155,7 +151,7 @@ clk_init();
 #endif
 	
   gpio_init();	
-	
+  ledon(255);									//Turn on LED during boot so that if a delay is used as part of using programming pins for other functions, the FC does not appear inactive while programming times out
 	spi_init();
 	
   time_init();
@@ -189,13 +185,11 @@ clk_init();
 aux[CH_ON] = 1;	
 	
 #ifdef AUX1_START_ON
-aux[CH_GES_1] = 1;
+aux[CH_AUX1] = 1;
 #endif
-	
-// bikin led dan high rate default to ON
-aux[CH_GES_LOOP_1] = 1;
-aux[CH_GES_LOOP_2] = 1;
-    
+
+aux[LEDS_ON] = 1;
+aux[RATES] = 1;
     
     #ifdef FLASH_SAVE1
 // read pid identifier for values in file pid.c
@@ -298,20 +292,17 @@ if ( liberror )
 			failloop(8);
 			// endless loop
 		}
-		
-		if (play_led == 1)
-			ledcommand = 1;
 
         // read gyro and accelerometer data	
 		sixaxis_read();
 		
-		
         // all flight calculations and motors
 		control();
 
-        // attitude calculations for level mode
+        // attitude calculations for level mode 		
  		extern void imu_calc(void);		
-		imu_calc();       
+		imu_calc(); 
+       
       
 // battery low logic
 
@@ -436,7 +427,7 @@ if ( LED_NUMBER > 0)
                     ledflash ( 500000, 15);			
                 }
             else 
-            {
+            {   rx_ready = 1;
                 int leds_on = aux[LEDS_ON];
                 if (ledcommand)
                 {
@@ -487,6 +478,10 @@ if ( LED_NUMBER > 0)
 // RGB led control
 extern	void rgb_led_lvc( void);
 rgb_led_lvc( );
+#ifdef RGB_LED_DMA
+extern void rgb_dma_start();
+rgb_dma_start();
+#endif
 #endif
 
 
@@ -548,12 +543,13 @@ while ( (gettime() - time) < LOOPTIME );
 }
 
 // 2 - low battery at powerup - if enabled by config
-
+// 3 - radio chip not detected
 // 4 - Gyro not found
 // 5 - clock , intterrupts , systick
+// 6 - loop time issue
 // 7 - i2c error 
 // 8 - i2c error main loop
-// 6 - loop time issue
+
 
 void failloop( int val)
 {

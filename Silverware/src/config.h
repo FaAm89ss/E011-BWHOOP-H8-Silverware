@@ -1,27 +1,7 @@
 #include "defines.h"
 #include "hardware.h"
 
-//*************
-//*************
-
-//#define USE_STOCK_TX
-//#define USE_DEVO
-#define USE_MULTI
-
-#define LIPO_HV
-
-#define ACRO_EXPO_ADJUST_MULTIPLIER 0.10f
-#define THROTTLE_EXPO_ADJUST_MULTIPLIER 0.10f
-
-#define ENABLE_THROTTLE_EXPO
-#define THROTTLE_EXPO 1.0f
-
-#define ENABLE_ARMING
-
-//*************
-//*************
-
-// adjust pids in pid.c file
+//Universal pids are already loaded for 6mm and 7mm whoops by default.  Adjust pids in pid.c file for any non whoop builds.  
 
 //**********************************************************************************************************************
 //***********************************************HARDWARE SELECTION*****************************************************
@@ -36,6 +16,19 @@
 //#define H8mini_blue_board
 //#define Alienwhoop_ZERO  // requires defining RX_SBUS radio protocol
 
+//#define LIPO_HV
+
+#define ACRO_EXPO_ADJUST_MULTIPLIER 0.10f
+#define THROTTLE_EXPO_ADJUST_MULTIPLIER 0.10f
+
+//#define ENABLE_THROTTLE_EXPO
+#define THROTTLE_EXPO 1.0f
+
+#define ENABLE_ARMING
+
+//*************
+//*************
+
 //**********************************************************************************************************************
 //***********************************************RECEIVER SETTINGS******************************************************
 
@@ -45,19 +38,19 @@
 #ifdef USE_STOCK_TX
 
 #define MAX_RATE 720.0
-#define MAX_RATEYAW 600.0
+#define MAX_RATEYAW 720.0
 
 #endif
 
 #ifndef USE_STOCK_TX
 
 #define MAX_RATE 1400.0
-#define MAX_RATEYAW 1000.0
+#define MAX_RATEYAW 1400.0
 
 #endif
 
 // *************max angle for level mode
-#define MAX_ANGLE_HI 45.0f
+#define LEVEL_MAX_ANGLE 65.0f
 
 // ************* low rates multiplier if rates are assigned to a channel
 #define LOW_RATES_MULTI 0.5f
@@ -78,16 +71,18 @@
 
 // *************Radio protocol selection
 // *************select only one
-//#define RX_CG023_PROTOCOL
-//#define RX_H7_PROTOCOL
 //#define RX_BAYANG_PROTOCOL
 //#define RX_BAYANG_PROTOCOL_TELEMETRY
 //#define RX_BAYANG_PROTOCOL_TELEMETRY_AUTOBIND
 //#define RX_BAYANG_PROTOCOL_BLE_BEACON
 #define RX_BAYANG_BLE_APP
-//#define RX_CX10BLUE_PROTOCOL
-//#define RX_SBUS
 //#define RX_NRF24_BAYANG_TELEMETRY
+//#define RX_SBUS
+
+// *************Transmitter Type Selection
+//#define USE_STOCK_TX
+//#define USE_DEVO
+#define USE_MULTI
 
 // *******************************SWITCH SELECTION*****************************
 // *************CHAN_ON - on always ( all protocols)
@@ -97,12 +92,17 @@
 //**************CHAN_7 (headfree button), CHAN_8 (roll trim buttons), CHAN_9 (pitch trim buttons)
 
 //*************Arm switch and Idle Up switch (idle up will behave like betaflight airmode)
-//*************comment out to disable
+//*************comment out to disable arming or idle up features ONLY if not wanted.  Other features set to CHAN_OFF to disable
+
+//*************Assign feature to auxiliary channel.  NOTE - Switching on LEVELMODE is required for any leveling modes to 
+//*************be active.  With LEVELMODE active - MCU will apply RACEMODE if racemode channel is on, HORIZON if horizon 
+//*************channel is on, or racemodeHORIZON if both channels are on - and will be standard LEVELMODE if neither 
+//*************racemode or horizon are switched on.
 #ifdef ENABLE_ARMING
 
 #define ARMING CHAN_5
 #define IDLE_UP CHAN_5
-#define IDLE_THR 0.00001f
+#define IDLE_THR 0.0001f
 
 #endif
 
@@ -135,9 +135,9 @@
 
 #ifndef ENABLE_ARMING
 
-#define LEVELMODE CHAN_5
-#define RACEMODE  CHAN_6
-#define HORIZON   CH_GES_2
+#define LEVELMODE CH_GES_1
+#define RACEMODE  CH_GES_2
+#define HORIZON   CH_GES_3
 #define RATES CH_GES_LOOP_1
 #define LEDS_ON CH_GES_LOOP_2
 
@@ -145,6 +145,8 @@
 #endif
 
 #ifdef USE_STOCK_TX
+
+#ifdef ENABLE_ARMING
 
 #define LEVELMODE CH_RLL_TRIM
 #define RACEMODE  CH_GES_2
@@ -154,6 +156,19 @@
 
 #endif
 
+#ifndef ENABLE_ARMING
+
+#define LEVELMODE CH_GES_1
+#define RACEMODE  CH_GES_2
+#define HORIZON   CH_GES_3
+#define RATES CH_GES_LOOP_1
+#define LEDS_ON CH_GES_LOOP_2
+
+#endif
+#endif
+
+#define PIDPROFILE CHAN_9
+
 // *************switch for fpv / other, requires fet
 // *************comment out to disable
 //#define FPV_ON CHAN_ON
@@ -162,25 +177,39 @@
 // *************external buzzer requires pin assignment in hardware.h before defining below
 // *************change channel assignment from CHAN_OFF to a numbered aux switch if you want switch control
 // *************if no channel is assigned but buzzer is set to CHAN_ON - buzzer will activate on LVC and FAILSAFE.
-#define BUZZER_ENABLE CHAN_OFF
+//#define BUZZER_ENABLE CHAN_OFF
 
 // *************start in level mode for toy tx.
-//#define AUX1_START_ON
+#define AUX1_START_ON
 
 // *************automatically remove center bias in toy tx ( needs throttle off for 1 second )
-//#define STOCK_TX_AUTOCENTER
+#define STOCK_TX_AUTOCENTER
 
 
 
 //**********************************************************************************************************************
 //***********************************************VOLTAGE SETTINGS*******************************************************
 
-// *************battery saver
+// ************* Raises pids automatically as battery voltage drops in flight.
+#define PID_VOLTAGE_COMPENSATION
+#define LEVELMODE_PID_ATTENUATION 0.90f  //used to prevent oscillations in angle modes with pid_voltage_compensation enabled due to high pids
+
+// *************compensation for battery voltage vs throttle drop
+#define VDROP_FACTOR 0.7
+// *************calculate above factor automatically
+#define AUTO_VDROP_FACTOR
+
+// *************lower throttle when battery below threshold - forced landing low voltage cutoff
+//#define LVC_LOWER_THROTTLE
+#define LVC_LOWER_THROTTLE_VOLTAGE 3.30
+#define LVC_LOWER_THROTTLE_VOLTAGE_RAW 2.70
+#define LVC_LOWER_THROTTLE_KP 3.0
+
 // *************do not start software if battery is too low
 // *************flashes 2 times repeatedly at startup
 //#define STOP_LOWBATTERY
 
-// *************voltage to start warning
+// *************voltage to start warning led blinking
 #ifdef LIPO_HV
 #define VBATTLOW 3.6
 #endif
@@ -188,39 +217,28 @@
 #define VBATTLOW 3.5
 #endif
 
-// *************compensation for battery voltage vs throttle drop
-#define VDROP_FACTOR 0.7
-// *************calculate above factor automatically
-#define AUTO_VDROP_FACTOR
-
-// *************voltage hysteresys in volts
+// *************voltage hysteresis in volts
 #define HYST 0.10
 
-// *************lower throttle when battery below treshold - forced landing low voltage cutoff
-//#define LVC_LOWER_THROTTLE
-#ifdef LIPO_HV
-#define LVC_LOWER_THROTTLE_VOLTAGE 3.40
-#define LVC_LOWER_THROTTLE_VOLTAGE_RAW 2.80
-#define LVC_LOWER_THROTTLE_KP 3.1
-// *************automatic voltage telemetry correction/calibration factor - change the values below if voltage telemetry is inaccurate
-#define ACTUAL_BATTERY_VOLTAGE 4.35
-#define REPORTED_TELEMETRY_VOLTAGE 4.35
-#endif
-
-#ifndef LIPO_HV
-#define LVC_LOWER_THROTTLE_VOLTAGE 3.30
-#define LVC_LOWER_THROTTLE_VOLTAGE_RAW 2.70
-#define LVC_LOWER_THROTTLE_KP 3.0
 // *************automatic voltage telemetry correction/calibration factor - change the values below if voltage telemetry is inaccurate
 #define ACTUAL_BATTERY_VOLTAGE 4.20
 #define REPORTED_TELEMETRY_VOLTAGE 4.20
-#endif
 
 
 
 //**********************************************************************************************************************
 //***********************************************FILTER SETTINGS********************************************************
 
+// *************Select the appropriate filtering set for your craft's gyro, D-term, and motor output or select CUSTOM_FILTERING to pick your own values.  
+// *************If your throttle does not want to drop crisply and quickly when you lower the throttle stick, then move to a stronger filter set
+
+#define WEAK_FILTERING
+//#define STRONG_FILTERING
+//#define VERY_STRONG_FILTERING
+//#define CUSTOM_FILTERING
+
+
+#ifdef CUSTOM_FILTERING
 // *************gyro low pass filter ( iir )
 // *************set only one below - kalman, 1st order, or second order - and adjust frequency
 //**************ABOVE 100 ADJUST IN INCRIMENTS OF 20, BELOW 100 ADJUST IN INCRIMENTS OF 10
@@ -228,21 +246,20 @@
 //#define SOFT_LPF_1ST_HZ 80
 //#define SOFT_LPF_2ND_HZ 80
 
-
 // *************D term low pass filter type - set only one below and adjust frequency if adjustable filter is used
 // *************1st order adjustable, second order adjustable, or 3rd order fixed (non adjustable)
 //#define DTERM_LPF_1ST_HZ 100
 #define  DTERM_LPF_2ND_HZ 100
-//#define DTERM_LPF3_88
+
+// *************enable motor output filter - select and adjust frequency
+//#define MOTOR_FILTER2_ALPHA MFILT1_HZ_90
+#define MOTOR_KAL KAL1_HZ_70
+#endif
 
 
 
 //**********************************************************************************************************************
 //***********************************************MOTOR OUTPUT SETTINGS**************************************************
-
-// *************enable motor output filter - select and adjust frequency
-#define MOTOR_FILTER2_ALPHA MFILT1_HZ_90
-//#define MOTOR_KAL KAL1_HZ_70
 
 // *************pwm frequency for motor control
 // *************a higher frequency makes the motors more linear
@@ -267,10 +284,10 @@
 // *************is very noise sensative so D term specifically has to be lowered and gyro/d filtering may need to be increased.
 // *************reccomendation right now is to leave boost at or below 2, drop your p gains a few points, then cut your D in half and 
 // *************retune it back up to where it feels good.  I'm finding about 60 to 65% of my previous D value seems to work.
-#define TORQUE_BOOST 0.5
+//#define TORQUE_BOOST 0.5
 
 // *************makes throttle feel more poppy - can intensify small throttle imbalances visible in FPV if factor is set too high
-#define THROTTLE_TRANSIENT_COMPENSATION 
+//#define THROTTLE_TRANSIENT_COMPENSATION 
 #define THROTTLE_TRANSIENT_COMPENSATION_FACTOR 4.0 
  
 // *************throttle angle compensation in level mode
@@ -283,8 +300,11 @@
 #define MIX_THROTTLE_REDUCTION_PERCENT 10
 //#define MIX_INCREASE_THROTTLE
 
-#define MIX_LOWER_THROTTLE_3
-//#define MIX_INCREASE_THROTTLE_3
+//#define MIX_LOWER_THROTTLE_3
+#define MIX_INCREASE_THROTTLE_3
+//Currently eperimenting with the value 1.0f below for whoop format.  Default was previously .2f and should remain .2f
+//for anything other than a whoop.  The value 1.0f gives "airmode" 100% authority over throttle and is AWESOME on a whoop for locked in dives!!
+#define MIX_THROTTLE_INCREASE_MAX 0.2f
 
 // *************invert yaw pid for "PROPS OUT" configuration
 //#define INVERT_YAW_PID
@@ -292,14 +312,16 @@
 //**************joelucid's yaw fix
 #define YAW_FIX
 
+//**************joelucid's transient windup protection.  Removes roll and pitch bounce back after flips
+#define TRANSIENT_WINDUP_PROTECTION
+
 
 
 //**********************************************************************************************************************
 //***********************************************ADDITIONAL FEATURES****************************************************
 
-// *************lost quad beeps using motors (30 sec timeout)
+// *************lost quad beeps using motors (30 sec timeout) - pulses motors after timeout period to help find a lost model
 //#define MOTOR_BEEPS
-
 
 // *************0 - 7 - power for telemetry
 #define TX_POWER 7
@@ -321,12 +343,15 @@
 #define FLASH_SAVE1
 //#define FLASH_SAVE2
 
-
-// enable inverted flight code ( brushless only )
+// *************enable inverted flight code ( brushless only )
 //#define INVERTED_ENABLE
 //#define FN_INVERTED CH_OFF //for brushless only
 
-
+// *************SPECIAL TEST MODE TO CHECK TRANSMITTER STICK THROWS
+// *************This define will allow you to check if your radio is reaching 100% throws entering <RIGHT-RIGHT-DOWN> gesture
+// ************* will disable throttle and will rapid blink the led when sticks are moved to 100% throws
+// *************entering <LEFT-LEFT-DOWN> will return the quad to normal operation.
+//#define STICK_TRAVEL_CHECK
 
 
 
@@ -339,37 +364,49 @@
 //#############################################################################################################################
 //#############################################################################################################################
 
+//enables use of stick accelerator and stick transition for d term lpf 1 & 2
+#define ADVANCED_PID_CONTROLLER
+
 //Throttle must drop below this value if arming feature is enabled for arming to take place.  MIX_INCREASE_THROTTLE_3 if enabled
 //will also not activate on the ground untill this threshold is passed during takeoff for safety and better staging behavior.
 #define THROTTLE_SAFETY .10f
-
-// Gyro LPF filter frequency
-// gyro filter 0 = 250hz delay 0.97mS
-// gyro filter 1 = 184hz delay 2.9mS
-// gyro filter 2 = 92hz delay 3.9mS
-// gyro filter 3 = 41hz delay 5.9mS (Default)
-// gyro filter 4 = 20hz
-// gyro filter 5 = 10hz
-// gyro filter 6 = 5hz
-// gyro filter 7 = 3600hz delay 0.17mS
-#define GYRO_LOW_PASS_FILTER 0
-
-// disable inbuilt expo functions
-//#define DISABLE_EXPO
-
-#ifndef USE_STOCK_TX
-#define DISABLE_FLIP_SEQUENCER
-#endif
-
-#ifdef USE_STOCK_TX
-#define STARTFLIP CH_FLIP
-#endif
 
 // level mode "manual" trims ( in degrees)
 // pitch positive forward
 // roll positive right
 #define TRIM_PITCH 0.0
 #define TRIM_ROLL 0.0
+
+// max rate used by level pid ( limit )
+#define LEVEL_MAX_RATE 230
+
+// limit minimum motor output to a value (0.0 - 1.0)
+#define MOTOR_MIN_ENABLE
+#define MOTOR_MIN_VALUE 0.05
+
+
+#ifdef WEAK_FILTERING
+#define SOFT_KALMAN_GYRO KAL1_HZ_90
+#define  DTERM_LPF_2ND_HZ 100
+#define MOTOR_FILTER2_ALPHA MFILT1_HZ_90
+#endif
+
+#ifdef STRONG_FILTERING
+#define SOFT_KALMAN_GYRO KAL1_HZ_80
+#define  DTERM_LPF_2ND_HZ 90
+#define MOTOR_FILTER2_ALPHA MFILT1_HZ_80
+#endif
+
+#ifdef VERY_STRONG_FILTERING
+#define SOFT_KALMAN_GYRO KAL1_HZ_70
+#define  DTERM_LPF_2ND_HZ 80
+#define MOTOR_FILTER2_ALPHA MFILT1_HZ_70
+#endif
+
+#define GYRO_LOW_PASS_FILTER 0
+
+#define DISABLE_FLIP_SEQUENCER
+#define STARTFLIP CHAN_OFF
 
 // disable motors for testing
 //#define NOMOTORS
@@ -380,16 +417,12 @@
 // throttle direct to motors for thrust measure as a flight mode
 //#define MOTORS_TO_THROTTLE_MODE MULTI_CHAN_8
 
-
 // loop time in uS
 // this affects soft gyro lpf frequency if used
 #define LOOPTIME 1000
 
 // failsafe time in uS
 #define FAILSAFETIME 1000000  // one second
-
-// max rate used by level pid ( limit )
-#define LEVEL_MAX_RATE 360
 
 // debug things ( debug struct and other)
 //#define DEBUG
@@ -405,25 +438,13 @@
 #define ENABLESTIX_TIMEOUT 1e6
 
 // overclock to 64Mhz
+
 //#define ENABLE_OVERCLOCK
-
-
-// limit minimum motor output to a value (0.0 - 1.0)
-//#define MOTOR_MIN_ENABLE
-#define MOTOR_MIN_VALUE 0.05
-
-
-
-
 
 #pragma diag_warning 1035 , 177 , 4017
 #pragma diag_error 260
 
 //--fpmode=fast
-
-
-
-
 
 // define logic - do not change
 ///////////////
@@ -435,27 +456,20 @@
 #define SYS_CLOCK_FREQ_HZ 48000000
 #endif
 
-
-
 #ifdef MOTOR_BEEPS
 #ifdef USE_ESC_DRIVER
 #warning "MOTOR BEEPS_WORKS WITH BRUSHED MOTORS ONLY"
 #endif
 #endif
 
-
-
 // for the ble beacon to work after in-flight reset
 #ifdef RX_BAYANG_PROTOCOL_BLE_BEACON
 #undef STOP_LOWBATTERY
 #endif
 
-
 // gcc warnings in main.c
 
-
-
-//Hardware defines moved from hardware.h so that board selection of bwhoop or e011 can be performed in config.h file
+//Hardware target defines moved from hardware.h so that board selection of bwhoop or e011 can be performed in config.h file
 
 #ifdef BWHOOP
 //LEDS
@@ -480,23 +494,38 @@
 #define SENSOR_ROTATE_90_CW
 
 // SPI PINS DEFINITONS & RADIO
+#ifdef RX_SBUS
+#define SERIAL_RX_PIN GPIO_Pin_14
+#define SERIAL_RX_PORT GPIOA
+#define SERIAL_RX_SOURCE GPIO_PinSource14
+#define SERIAL_RX_CHANNEL GPIO_AF_1
+#define SOFTSPI_NONE
+//dummy spi placeholders
+#define SPI_MOSI_PIN GPIO_Pin_x
+#define SPI_MOSI_PORT GPIOA
+#define SPI_CLK_PIN GPIO_Pin_y
+#define SPI_CLK_PORT GPIOA
+#define SPI_SS_PIN GPIO_Pin_z
+#define SPI_SS_PORT GPIOA
+#define RADIO_CHECK
+#else
 #define SOFTSPI_3WIRE
 #define SPI_MOSI_PIN GPIO_Pin_0
 #define SPI_MOSI_PORT GPIOA
-//#define SPI_MISO_PIN GPIO_Pin_15
-//#define SPI_MISO_PORT GPIOA
 #define SPI_CLK_PIN GPIO_Pin_1
 #define SPI_CLK_PORT GPIOF
 #define SPI_SS_PIN GPIO_Pin_0
 #define SPI_SS_PORT GPIOF
 #define RADIO_XN297L
 #define RADIO_CHECK
+#endif
 
 //VOLTAGE DIVIDER
 #define BATTERYPIN GPIO_Pin_5
 #define BATTERYPORT GPIOA
 #define BATTERY_ADC_CHANNEL ADC_Channel_5
 #define ADC_SCALEFACTOR 0.001364
+#define ADC_REF 1.17857f
 
 // MOTOR PINS
 #define MOTOR0_PIN_PB1 // motor 0 back-left
@@ -529,23 +558,38 @@
 #define SOFTI2C_PUSHPULL_CLK
 
 // SPI PINS DEFINITONS & RADIO
+#ifdef RX_SBUS
+#define SERIAL_RX_PIN GPIO_Pin_14
+#define SERIAL_RX_PORT GPIOA
+#define SERIAL_RX_SOURCE GPIO_PinSource14
+#define SERIAL_RX_CHANNEL GPIO_AF_1
+#define SOFTSPI_NONE
+//dummy spi placeholders
+#define SPI_MOSI_PIN GPIO_Pin_x
+#define SPI_MOSI_PORT GPIOA
+#define SPI_CLK_PIN GPIO_Pin_y
+#define SPI_CLK_PORT GPIOA
+#define SPI_SS_PIN GPIO_Pin_z
+#define SPI_SS_PORT GPIOA
+#define RADIO_CHECK
+#else
 #define SOFTSPI_3WIRE
 #define SPI_MOSI_PIN GPIO_Pin_0
 #define SPI_MOSI_PORT GPIOF
-//#define SPI_MISO_PIN GPIO_Pin_15
-//#define SPI_MISO_PORT GPIOA
 #define SPI_CLK_PIN GPIO_Pin_1
 #define SPI_CLK_PORT GPIOF
 #define SPI_SS_PIN GPIO_Pin_0
 #define SPI_SS_PORT GPIOA
 #define RADIO_XN297L
 #define RADIO_CHECK
+#endif
 
 //VOLTAGE DIVIDER
 #define BATTERYPIN GPIO_Pin_5
 #define BATTERYPORT GPIOA
 #define BATTERY_ADC_CHANNEL ADC_Channel_5
 #define ADC_SCALEFACTOR 0.001364
+#define ADC_REF 1.17857f
 
 // Assingment of pin to motor
 #define MOTOR0_PIN_PA6 // motor 0 back-left
@@ -576,6 +620,21 @@
 #define SENSOR_ROTATE_180
 
 // SPI PINS DEFINITONS & RADIO
+#ifdef RX_SBUS
+#define SERIAL_RX_PIN GPIO_Pin_14
+#define SERIAL_RX_PORT GPIOA
+#define SERIAL_RX_SOURCE GPIO_PinSource14
+#define SERIAL_RX_CHANNEL GPIO_AF_1
+#define SOFTSPI_NONE
+//dummy spi placeholders
+#define SPI_MOSI_PIN GPIO_Pin_x
+#define SPI_MOSI_PORT GPIOA
+#define SPI_CLK_PIN GPIO_Pin_y
+#define SPI_CLK_PORT GPIOA
+#define SPI_SS_PIN GPIO_Pin_z
+#define SPI_SS_PORT GPIOA
+#define RADIO_CHECK
+#else
 #define SOFTSPI_3WIRE
 #define SPI_MOSI_PIN GPIO_Pin_1
 #define SPI_MOSI_PORT GPIOA
@@ -585,12 +644,14 @@
 #define SPI_SS_PORT GPIOA
 #define RADIO_XN297L
 #define RADIO_CHECK
+#endif
 
 //VOLTAGE DIVIDER
 #define BATTERYPIN GPIO_Pin_5
 #define BATTERYPORT GPIOA
 #define BATTERY_ADC_CHANNEL ADC_Channel_5
 #define ADC_SCALEFACTOR 0.001364
+#define ADC_REF 1.17857f
 
 // Assingment of pin to motor
 #define MOTOR0_PIN_PA6 // motor 0 back-left
@@ -621,9 +682,13 @@
 #define SENSOR_ROTATE_90_CCW
 
 // SPI PINS DEFINITONS & RADIO
-//#define SOFTSPI_3WIRE
-//#define SOFTSPI_4WIRE
+#ifdef RX_SBUS
+#define SERIAL_RX_PIN GPIO_Pin_3
+#define SERIAL_RX_PORT GPIOA
+#define SERIAL_RX_SOURCE GPIO_PinSource3
+#define SERIAL_RX_CHANNEL GPIO_AF_1
 #define SOFTSPI_NONE
+//dummy spi placeholders
 #define SPI_MOSI_PIN GPIO_Pin_x
 #define SPI_MOSI_PORT GPIOA
 #define SPI_CLK_PIN GPIO_Pin_y
@@ -631,16 +696,42 @@
 #define SPI_SS_PIN GPIO_Pin_z
 #define SPI_SS_PORT GPIOA
 #define RADIO_CHECK
+#else
+#define SOFTSPI_3WIRE
+#define SPI_MOSI_PIN GPIO_Pin_3
+#define SPI_MOSI_PORT GPIOA
+#define SPI_CLK_PIN GPIO_Pin_2
+#define SPI_CLK_PORT GPIOA
+#define SPI_SS_PIN GPIO_Pin_1
+#define SPI_SS_PORT GPIOA
+#define RADIO_CHECK
+#define RADIO_XN297L
+#endif
 
 //VOLTAGE DIVIDER
 #define BATTERYPIN GPIO_Pin_5
 #define BATTERYPORT GPIOA
 #define BATTERY_ADC_CHANNEL ADC_Channel_5
-#define ADC_SCALEFACTOR 0.001364
+#define ADC_SCALEFACTOR 0.002423
+#define ADC_REF 1.0f
+
 
 // MOTOR PINS
+// MOTOR PINS
 #define MOTOR0_PIN_PA7
-#define MOTOR1_PIN_PA4
-#define MOTOR2_PIN_PB1
+//#define MOTOR1_PIN_PA4  //2nd Draft prototype patch
+//#define MOTOR2_PIN_PB1  //2nd Draft prototype patch
+#define MOTOR1_PIN_PB1
+#define MOTOR2_PIN_PA4
 #define MOTOR3_PIN_PA6
 #endif
+
+
+//**********************************************************************************************************************
+//***********************************************BETA TESTING ON STICK GESTURE******************************************
+// *************DEFINE ONLY ONE OPTION FROM THIS SECTION!!!
+// *************This is a new section that will allow certain beta testing features to be activated by the stick gesture
+// *************auxillary channel.  Even when defined - the quad will power up with these features off.  To activate -  
+// *************use the following stick gesture on the pitch/roll stick RIGHT-RIGHT-DOWN (leds will blink). To deactivate - 
+// *************stick gesture LEFT-LEFT-DOWN.  Please test the features you are interested in below and give feedback!!!
+

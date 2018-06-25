@@ -69,7 +69,7 @@ THE SOFTWARE.
 #ifdef RX_NRF24_BAYANG_TELEMETRY
 
 // crc enable - rx side
-static const int crc = 1; // zero or one only
+#define crc_en 1 // zero or one only
 
 void writeregs(uint8_t data[], uint8_t size)
 {
@@ -126,7 +126,7 @@ void nrf24_set_xn297_address( uint8_t* addr )
     crc_addr = 0xb5d2;
     for (int i = 5; i > 0; i--) {
         rxaddr[i] = addr[i - 1] ^ xn297_scramble[5-i];
-        if ( crc) crc_addr = crc16_update(crc_addr, rxaddr[i]);
+        if ( crc_en ) crc_addr = crc16_update(crc_addr, rxaddr[i]);
     }
 
     // write rx address
@@ -145,7 +145,7 @@ int nrf24_read_xn297_payload(int * rxdata, int size)
     // 81uS
     xn_readpayload(rxdata, size);
 
-    if ( crc)
+    if ( crc_en )
     {
     // 65uS
     uint16_t crcx;
@@ -164,7 +164,7 @@ int nrf24_read_xn297_payload(int * rxdata, int size)
     }
     }
     //29uS
-    for(int i=0 ; i<size- crc*2 ; i++)
+    for(int i=0 ; i<size- crc_en*2 ; i++)
     {
       rxdata[i] = swapbits(rxdata[i] ^ xn297_scramble[i+5]);        
     }
@@ -199,7 +199,8 @@ char rfchannel[4];
 int rxaddress[5];
 int rxmode = 0;
 int rf_chan = 0;
-
+int rx_state = 0;
+int rxdata[17 + 2* crc_en];
 
 
 
@@ -209,11 +210,11 @@ void rx_init()
 
 
 // always on (CH_ON) channel set 1
-    aux[AUXNUMBER + 1] = 1;
+    aux[AUXNUMBER - 2] = 1;
 // always off (CH_OFF) channel set 0
-    aux[AUXNUMBER] = 0;
+    aux[AUXNUMBER - 1] = 0;
 #ifdef AUX1_START_ON
-    aux[CH_GES_1] = 1;
+    aux[CH_AUX1] = 1;
 #endif
 
 
@@ -240,7 +241,7 @@ void rx_init()
     xn_writereg(RF_SETUP, B00000110);    // power / data rate 1000K
    #endif
 
-    xn_writereg(RX_PW_P0, 15+ crc*2);  // payload size
+    xn_writereg(RX_PW_P0, 15+ crc_en *2);  // payload size
     xn_writereg(SETUP_RETR, 0); // no retransmissions
     xn_writereg(SETUP_AW, 3);   // address size (5 bytes)
     xn_writereg(RF_CH, 0);      // bind on channel 0
@@ -397,7 +398,6 @@ static char checkpacket()
 }
 
 
-int rxdata[17 + 2*crc];
 
 
 float packettodata(int *data)
@@ -424,27 +424,6 @@ static int decodepacket(void)
                 rx[3] =
                     ((rxdata[8] & 0x0003) * 256 +
                      rxdata[9]) * 0.000976562f;
-
-#ifndef DISABLE_EXPO
-							if (aux[LEVELMODE]){
-								if (aux[RACEMODE]){
-									rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
-									rx[1] = rcexpo(rx[1], acro_expo_pitch);
-									rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
-								}else{
-									rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
-									rx[1] = rcexpo(rx[1], ANGLE_EXPO_PITCH);
-									rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);}
-							}else{
-								rx[0] = rcexpo(rx[0], acro_expo_roll);
-								rx[1] = rcexpo(rx[1], acro_expo_pitch);
-								rx[2] = rcexpo(rx[2], acro_expo_yaw);
-							}
-
-#ifdef ENABLE_THROTTLE_EXPO
-rx[3] = rcexpo(rx[3], throttle_expo);
-#endif
-#endif
 
 
 
@@ -481,7 +460,28 @@ rx[3] = rcexpo(rx[3], throttle_expo);
 
 
 
-                for (int i = 0; i < AUXNUMBER; i++)
+							if (aux[LEVELMODE]){
+								if (aux[RACEMODE] && !aux[HORIZON]){
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
+									if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
+								}else if (aux[HORIZON]){
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], acro_expo_roll);
+									if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);
+								}else{
+									if ( ANGLE_EXPO_ROLL > 0.01) rx[0] = rcexpo(rx[0], ANGLE_EXPO_ROLL);
+									if ( ANGLE_EXPO_PITCH > 0.01) rx[1] = rcexpo(rx[1], ANGLE_EXPO_PITCH);
+									if ( ANGLE_EXPO_YAW > 0.01) rx[2] = rcexpo(rx[2], ANGLE_EXPO_YAW);}
+							}else{
+								if ( acro_expo_roll > 0.01) rx[0] = rcexpo(rx[0], acro_expo_roll);
+								if ( acro_expo_pitch > 0.01) rx[1] = rcexpo(rx[1], acro_expo_pitch);
+								if ( acro_expo_yaw > 0.01) rx[2] = rcexpo(rx[2], acro_expo_yaw);
+							}
+
+
+
+                for (int i = 0; i < AUXNUMBER - 2; i++)
                   {
                       auxchange[i] = 0;
                       if (lastaux[i] != aux[i])
@@ -532,7 +532,7 @@ void checkrx(void)
             {                   
                 // rx startup , bind mode
                 
-                if ( nrf24_read_xn297_payload(rxdata, 15 + 2*crc) )  ;
+                if ( nrf24_read_xn297_payload(rxdata, 15 + 2* crc_en) )  ;
                 else return;
 
                 if (rxdata[0] == 0xa4 || rxdata[0] == 0xa3)
@@ -578,7 +578,7 @@ void checkrx(void)
 
                 unsigned long temptime = gettime();
 
-                int pass = nrf24_read_xn297_payload(rxdata, 15+ 2*crc);
+                int pass = nrf24_read_xn297_payload(rxdata, 15+ 2* crc_en);
                 if ( pass ) pass = decodepacket();
 
                 if (pass)
@@ -608,7 +608,7 @@ void checkrx(void)
                   }
 
             } // end normal rx mode
-
+         rx_state = 1;
       } // end packet received
 
 // finish sending if already started

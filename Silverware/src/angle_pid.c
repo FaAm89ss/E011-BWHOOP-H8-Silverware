@@ -8,22 +8,27 @@
 
 #define APIDNUMBER 2
 
-// ANGLE PIDS - used in level mode
-// acro pids are also used at the same time in level mode
+//**************************** ANGLE PIDS - used in level mode to set leveling strength
 
-// yaw is done by the rate yaw pid
-// Kp                       ROLL + PITCH  
-float apidkp[APIDNUMBER] = { 13.00 };
 
-// Kd
-float apidkd[APIDNUMBER] = { 5.0 };
+//HIGH LEVELING STRENGTH angle settings                       
+//float apidkp[APIDNUMBER] = { 13.00 };  // Kp ROLL + PITCH 
+//float apidkd[APIDNUMBER] = { 5.0 };    // Kd ROLL + PITCH 
+
+//NotFastEnuf personal settings                       
+float apidkp[APIDNUMBER] = { 5.00 };  // Kp ROLL + PITCH 
+float apidkd[APIDNUMBER] = { 0.0 };    // Kd ROLL + PITCH
+
+
+
+
+
+
 
 // code variables below
 
 // rate limit
 #define OUTLIMIT_FLOAT (float)LEVEL_MAX_RATE
-
-
 
 extern int onground;
 extern float looptime;

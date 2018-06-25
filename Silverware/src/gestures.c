@@ -11,10 +11,10 @@ extern int onground;
 extern char aux[AUXNUMBER + 6];
 extern int play_led;
 
-extern float acro_expo_roll;
-extern float acro_expo_pitch;
-extern float acro_expo_yaw;
-extern float throttle_expo;
+extern double acro_expo_roll;
+extern double acro_expo_pitch;
+extern double acro_expo_yaw;
+extern double throttle_expo;
 
 extern void flash_save( void);
 extern void flash_load( void);
@@ -48,10 +48,15 @@ void gestures( void)
                 #endif
                 
                 #ifdef FLASH_SAVE1
-			    
-                
+			    extern void flash_save( void);
+                extern void flash_load( void);
                 flash_save( );
                 flash_load( );
+                // reset flash numbers
+                extern int number_of_increments[3][3];
+                for( int i = 0 ; i < 3 ; i++)
+                    for( int j = 0 ; j < 3 ; j++)
+                        number_of_increments[i][j] = 0; 
                 #endif
 			    // reset loop time 
 			    extern unsigned long lastlooptime;
@@ -69,13 +74,13 @@ void gestures( void)
               
             if (command == GESTURE_RRD)
               {
-                  aux[CH_GES_1] = 1;
+                  aux[CH_AUX1] = 1;
                   ledcommand = 1;
               }
             if (command == GESTURE_LLD)
               {
                   ledcommand = 1;
-                  aux[CH_GES_1] = 0;
+                  aux[CH_AUX1] = 0;
               }
 							
 							
@@ -192,8 +197,6 @@ void gestures( void)
 							flash_save( );
 							flash_load( );
 						}
-
-							
 							
 							
 							

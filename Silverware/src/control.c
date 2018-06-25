@@ -40,16 +40,22 @@ THE SOFTWARE.
 #include "defines.h"
 #include "led.h"
 
+
+
 float	throttle;
 int idle_state;
 extern int armed_state;
 extern int in_air;
 extern int arming_release;
+extern int binding_while_armed;
+extern int rx_ready;
+extern int rx_state;
 
 extern float rx[];
 extern float gyro[3];
 extern int failsafe;
 extern float pidoutput[PIDNUMBER];
+extern float setpoint[3];
 
 extern float angleerror[];
 extern float attitude[];
@@ -165,20 +171,141 @@ pid_precalc();
 
 
 	// flight control
-	if (aux[LEVELMODE]&&!acro_override)
-	  {	   // level mode
-           // level calculations done after to reduce latency in acro mode
+        
+if (aux[LEVELMODE]&&!acro_override){
+	// level mode calculations done after to reduce latency
+	// the 1ms extra latency should not affect cascaded pids significantly
+	extern void stick_vector( float rx_input[] , float maxangle);
+	extern float errorvect[]; // level mode angle error calculated by stick_vector.c	
+	extern float GEstG[3]; // gravity vector for yaw feedforward
+	float yawerror[3] = {0}; // yaw rotation vector
+	// calculate roll / pitch error
+	stick_vector( rxcopy , 0 ); 
+	float yawrate = rxcopy[2] * (float) MAX_RATEYAW * DEGTORAD; 
+	// apply yaw from the top of the quad 
+	yawerror[0] = GEstG[1] * yawrate;
+	yawerror[1] = - GEstG[0] * yawrate;
+	yawerror[2] = GEstG[2] * yawrate;
+	
+	
+	// *************************************************************************
+	//horizon modes tuning variables
+	// *************************************************************************
+	// 1.0 is pure angle based transition, 0.0 is pure stick defelction based transition, values inbetween are a mix of both.  Adjust from 0 to 1
+	float HORIZON_SLIDER = 0.3f;
+	//leveling transitions into acro below this angle - above this angle is all acro.  DO NOT SET ABOVE 85 DEGREES!
+	float HORIZON_ANGLE_TRANSITION = 55.0f;
+	//leveling transitions into acro below this stick position - beyond this stick position is all acro. Adjust from 0 to 1
+	float HORIZON_STICK_TRANSITION = 0.95f;
+	// *************************************************************************
+	// *************************************************************************
+	
+	
+	if (aux[RACEMODE] && !aux[HORIZON]){ //racemode with angle behavior on roll ais
+			if (GEstG[2] < 0 ){ // acro on roll and pitch when inverted
+					error[0] = rxcopy[0] * (float) MAX_RATE * DEGTORAD - gyro[0];
+					error[1] = rxcopy[1] * (float) MAX_RATE * DEGTORAD - gyro[1];
+			}else{
+					//roll is leveled to max angle limit
+					angleerror[0] = errorvect[0] ; 
+					error[0] = apid(0) + yawerror[0] - gyro[0];
+					//pitch is acro 
+					error[1] = rxcopy[1] * (float) MAX_RATE * DEGTORAD - gyro[1];}
+			// yaw
+			error[2] = yawerror[2] - gyro[2];
+		
+	}else if(aux[RACEMODE] && aux[HORIZON]){	//racemode with horizon behavior on roll axis	
+			float inclinationRoll	= attitude[0];
+			float inclinationPitch = attitude[1];
+			float inclinationMax;
+			if (fabsf(inclinationRoll) >= fabsf(inclinationPitch)){
+					inclinationMax = fabsf(inclinationRoll);
+			}else{
+					inclinationMax = fabsf(inclinationPitch);}
+			float angleFade;
+			// constrains acroFade variable between 0 and 1
+			if (inclinationMax <= HORIZON_ANGLE_TRANSITION){
+					angleFade = inclinationMax/HORIZON_ANGLE_TRANSITION;
+			}else{
+					angleFade = 1;}
+			float stickFade;
+			float deflection = fabsf(rxcopy[0]);
+			if (deflection <= HORIZON_STICK_TRANSITION){
+					stickFade = deflection/HORIZON_STICK_TRANSITION;
+			}else{
+					stickFade = 1;}
+			float fade = (stickFade *(1-HORIZON_SLIDER))+(HORIZON_SLIDER * angleFade);
+			// apply acro to roll for inverted behavior
+			if (GEstG[2] < 0 ){
+					error[0] = rxcopy[0] * (float) MAX_RATE * DEGTORAD - gyro[0];
+					error[1] = rxcopy[1] * (float) MAX_RATE * DEGTORAD - gyro[1];
+			}else{ // apply a transitioning mix of acro and level behavior inside of stick HORIZON_TRANSITION point and full acro beyond stick HORIZON_TRANSITION point					
+					angleerror[0] = errorvect[0] ;
+					// roll angle strength fades out as sticks approach HORIZON_TRANSITION while acro stength fades in according to value of acroFade factor
+					error[0] = ((apid(0) + yawerror[0] - gyro[0]) * (1 - fade)) + (fade * (rxcopy[0] * (float) MAX_RATE * DEGTORAD - gyro[0]));
+					//pitch is acro
+					error[1] = rxcopy[1] * (float) MAX_RATE * DEGTORAD - gyro[1];
+			}
+	
+			// yaw
+			error[2] = yawerror[2]  - gyro[2];  
+		
+	}else if(!aux[RACEMODE] && aux[HORIZON]){ //horizon overrites standard level behavior	
+			//pitch and roll
+			for ( int i = 0 ; i <=1; i++){	
+			  	float inclinationRoll	= attitude[0];
+					float inclinationPitch = attitude[1];
+					float inclinationMax;
+					if (fabsf(inclinationRoll) >= fabsf(inclinationPitch)){
+						inclinationMax = fabsf(inclinationRoll);
+					}else{
+						inclinationMax = fabsf(inclinationPitch);}
+					float angleFade;
+					// constrains acroFade variable between 0 and 1
+					if (inclinationMax <= HORIZON_ANGLE_TRANSITION){
+						angleFade = inclinationMax/HORIZON_ANGLE_TRANSITION;
+					}else{
+						angleFade = 1;
+					}
+					float stickFade;
+					float deflection = fabsf(rxcopy[i]);
+					if (deflection <= HORIZON_STICK_TRANSITION){
+						stickFade = deflection/HORIZON_STICK_TRANSITION;
+					}else{
+						stickFade = 1;
+					}
+					float fade = (stickFade *(1-HORIZON_SLIDER))+(HORIZON_SLIDER * angleFade);
+					// apply acro to roll and pitch sticks for inverted behavior
+					if (GEstG[2] < 0 ){
+						error[i] = rxcopy[i] * (float) MAX_RATE * DEGTORAD - gyro[i];
+					}else{ // apply a transitioning mix of acro and level behavior inside of stick HORIZON_TRANSITION point and full acro beyond stick HORIZON_TRANSITION point					
+						angleerror[i] = errorvect[i] ;
+						//  angle strength fades out as sticks approach HORIZON_TRANSITION while acro stength fades in according to value of acroFade factor
+						error[i] = ((apid(i) + yawerror[i] - gyro[i]) * (1 - fade)) + (fade * (rxcopy[i] * (float) MAX_RATE * DEGTORAD - gyro[i]));
+					}
+			}
+			// yaw
+			error[2] = yawerror[2]  - gyro[2];  
+			
+	}else{ //standard level mode
+	    // pitch and roll
+			for ( int i = 0 ; i <=1; i++){
+					angleerror[i] = errorvect[i] ;    
+					error[i] = apid(i) + yawerror[i] - gyro[i];
+			}
+      // yaw
+			error[2] = yawerror[2]  - gyro[2];
+		} 
+}else{	// rate mode
+
+    setpoint[0] = rxcopy[0] * (float) MAX_RATE * DEGTORAD;
+		setpoint[1] = rxcopy[1] * (float) MAX_RATE * DEGTORAD;
+		setpoint[2] = rxcopy[2] * (float) MAX_RATEYAW * DEGTORAD;
           
-	  }
-	else
-	  {	// rate mode
-
-		  error[0] = rxcopy[0] * (float) MAX_RATE * DEGTORAD  - gyro[0];
-		  error[1] = rxcopy[1] * (float) MAX_RATE * DEGTORAD  - gyro[1];
-
-          error[2] = rxcopy[2] * (float) MAX_RATEYAW * DEGTORAD  - gyro[2];
-
-	  }
+		for ( int i = 0; i < 3; i++ ) {
+			error[i] = setpoint[i] - gyro[i];
+		}
+}
 
 
  #ifdef YAW_FIX
@@ -204,19 +331,20 @@ pid_precalc();
 
 		
 #ifndef ARMING
- armed_state = 1;
-#else
-	if (!aux[ARMING]){
-		armed_state = 0;
-	}else{ 
-	 if ((rx[3] > THROTTLE_SAFETY) && (arming_release == 0)){
-			armed_state = 0;
+ armed_state = 1;																							 									 // if arming feature is disabled - quad is always armed
+#else																												  											// CONDITION: arming feature is enabled
+	if (!aux[ARMING]){																					 										  // 						CONDITION: switch is DISARMED
+		armed_state = 0;																															  // 												disarm the quad by setting armed state variable to zero
+		if ((rx_ready == 1) && (rx_state ==1))	binding_while_armed = 0;																		//                        rx is bound and has been disarmed so clear binding while armed flag
+	}else{ 																				   						  										// 						CONDITION: switch is ARMED
+		if (((rx[3] > THROTTLE_SAFETY) && (arming_release == 0)) || (binding_while_armed == 1)){ 		//				   CONDITION: (throttle is above safety limit and ARMING RELEASE FLAG IS NOT CLEARED) OR (bind just took place with transmitter armed)		
+			armed_state = 0;																				 										  //                         	 				override to disarmed state and rapid blink the leds
 		  ledcommand = 1;
-	 }else{
-			armed_state = 1;
-		  arming_release = 1;
-	 }
-	}
+		}else{																									  										  //            					 CONDITION: quad is being armed in a safe state 																		
+			armed_state = 1;                                        										  //                      					  arm the quad by setting armed state variable to 1
+		  arming_release = 1;																														//                       						clear the arming release flag - the arming release flag being cleared
+		}																													 										  //											 						is what stops the quad from automatically disarming again the next time
+	}																																									//											 						throttle is raised above the safety limit
 #endif
 
 #ifndef IDLE_UP
@@ -231,20 +359,35 @@ pid_precalc();
 	#define IDLE_THR .05f
 #endif
 
-if (armed_state == 0){                                     										//disarmed - indicate craft is not in the air and kill throttle
-	throttle = 0;
-	in_air = 0;
-	arming_release = 0;
+	if (armed_state == 0){                                     												// CONDITION: armed state variable is 0 so quad is DISARMED					
+		throttle = 0;																																		//						override throttle to 0
+		in_air = 0;																																			//						flag in air variable as NOT IN THE AIR for mix throttle increase safety
+		arming_release = 0;																															//						arming release flag is set to not cleared to reactivate the throttle safety limit for the next arming event
 	
-}else{                                                    										 //armed
-		if (idle_state == 0){                                     											 //if idle up feature is off - perform a regular throttle function
-				if ( rx[3] < 0.05f ) throttle = 0;                            											//kill throttle at bottom w/small deadband
-				else throttle = (rx[3] - 0.05f)*1.05623158f;                 												//scale throttle for rest of the stick   
-	 }else{ 																																							//if idle up feature is on
-		throttle =  (float) IDLE_THR + rx[3] * (1.0f - (float) IDLE_THR);											  //establish idle up throttle mapping
-		if ((rx[3] > THROTTLE_SAFETY) && (in_air == 0)) in_air = 1; 																				//indicate change to airborne                					 		
-	}	
+	}else{                                                    	  										// CONDITION: armed state variable is 1 so quad is ARMED							 
+			if (idle_state == 0){                                     										//            CONDITION: idle up is turned OFF				
+				if ( rx[3] < 0.05f ){
+					throttle = 0;                      																				//   											set a small dead zone where throttle is zero and
+				  in_air = 0;																																//												deactivate mix increase 3 since throttle is off
+				}else{ 
+					throttle = (rx[3] - 0.05f)*1.05623158f;            												//                        map the remainder of the the active throttle region to 100%
+					in_air = 1;}																															//												activate mix increase since throttle is on
+			}else{ 																																				//						CONDITION: idle up is turned ON												
+				throttle =  (float) IDLE_THR + rx[3] * (1.0f - (float) IDLE_THR);						//            						throttle range is mapped from idle throttle value to 100%							  
+				if ((rx[3] > THROTTLE_SAFETY) && (in_air == 0)) in_air = 1; 			  				//            						change the state of in air flag when first crossing the throttle 
+			}																																							//            						safety value to indicate craft has taken off for mix increase safety
+	}
+
+#ifdef STICK_TRAVEL_CHECK																				//This feature completely disables throttle and allows visual feedback if control inputs reach full throws
+//Stick endpoints check tied to aux channel stick gesture
+if (aux[CH_AUX1]){
+	throttle = 0;
+	if ((rx[0]<= -0.99f) || (rx[0] >= 0.99f) || (rx[1] <= -0.99f) || (rx[1] >= 0.99f) || (rx[2] <= -0.99f) || (rx[2] >= 0.99f) || (rx[3] <= 0.0f) || (rx[3] >= 0.99f)){
+		ledcommand = 1;}
 }
+#endif
+
+
 
 // turn motors off if throttle is off and pitch / roll sticks are centered
 	if ( failsafe || (throttle < 0.001f && (!ENABLESTIX || !onground_long || aux[LEVELMODE] || (fabsf(rx[ROLL]) < (float) ENABLESTIX_TRESHOLD && fabsf(rx[PITCH]) < (float) ENABLESTIX_TRESHOLD && fabsf(rx[YAW]) < (float) ENABLESTIX_TRESHOLD ) ) ) ) 
@@ -584,36 +727,35 @@ if ( overthrottle > 0.1f) ledcommand = 1;
 }
 #endif
 
-//if (in_air == 1){
+
 #ifdef MIX_INCREASE_THROTTLE_3
 {
 #ifndef MIX_THROTTLE_INCREASE_MAX
 #define MIX_THROTTLE_INCREASE_MAX 0.2f
 #endif
-if (in_air == 1){
-float underthrottle = 0;
+	if (in_air == 1){
+		float underthrottle = 0;
 
-for (int i = 0; i < 4; i++)
-    {
-        if (mix[i] < underthrottle)
-            underthrottle = mix[i];
-    }
+		for (int i = 0; i < 4; i++)
+			{
+					if (mix[i] < underthrottle)
+							underthrottle = mix[i];
+			}
 
 
-// limit to half throttle max reduction
-if ( underthrottle < -(float) MIX_THROTTLE_INCREASE_MAX)  underthrottle = -(float) MIX_THROTTLE_INCREASE_MAX;
+		// limit to half throttle max reduction
+		if ( underthrottle < -(float) MIX_THROTTLE_INCREASE_MAX)  underthrottle = -(float) MIX_THROTTLE_INCREASE_MAX;
 
-if ( underthrottle < 0.0f)
-    {
-        for ( int i = 0 ; i < 4 ; i++)
+		if ( underthrottle < 0.0f)
+			{
+					for ( int i = 0 ; i < 4 ; i++)
             mix[i] -= underthrottle;
-    }
-#ifdef MIX_THROTTLE_FLASHLED
-if ( underthrottle < -0.01f) ledcommand = 1;
-#endif
+			}
+		#ifdef MIX_THROTTLE_FLASHLED
+			if ( underthrottle < -0.01f) ledcommand = 1;
+		#endif
 	}
-}	
-
+}
 #endif
 
             
@@ -679,133 +821,6 @@ thrsum = 0;
 		thrsum = thrsum / 4;
 		
 	}// end motors on
-
-   
-if (aux[LEVELMODE]&&!acro_override){
-	// level mode calculations done after to reduce latency
-	// the 1ms extra latency should not affect cascaded pids significantly
-	extern void stick_vector( float rx_input[] , float maxangle);
-	extern float errorvect[]; // level mode angle error calculated by stick_vector.c	
-	extern float GEstG[3]; // gravity vector for yaw feedforward
-	float yawerror[3] = {0}; // yaw rotation vector
-	// calculate roll / pitch error
-	stick_vector( rxcopy , 0 ); 
-	float yawrate = rxcopy[2] * (float) MAX_RATEYAW * DEGTORAD; 
-	// apply yaw from the top of the quad 
-	yawerror[0] = GEstG[1] * yawrate;
-	yawerror[1] = - GEstG[0] * yawrate;
-	yawerror[2] = GEstG[2] * yawrate;
-	
-	
-	//*************************************************************************
-	//horizon modes tuning variables
-	//*************************************************************************
-	// 1.0 is pure angle based transition, 0.0 is pure stick defelction based transition, values inbetween are a mix of both.  Adjust from 0 to 1
-	float HORIZON_SLIDER = 0.3f;
-	//leveling transitions into acro below this angle - above this angle is all acro.  DO NOT SET ABOVE 85 DEGREES!
-	float HORIZON_ANGLE_TRANSITION = 55.0f;
-	//leveling transitions into acro below this stick position - beyond this stick position is all acro. Adjust from 0 to 1
-	float HORIZON_STICK_TRANSITION = 0.95f;
-	//*************************************************************************
-	//*************************************************************************
-	
-	
-	if (aux[RACEMODE] && !aux[HORIZON]){ //racemode with angle behavior on roll ais
-			if (GEstG[2] < 0 ){ // acro on roll and pitch when inverted
-					error[0] = rxcopy[0] * (float) MAX_RATE * DEGTORAD - gyro[0];
-					error[1] = rxcopy[1] * (float) MAX_RATE * DEGTORAD - gyro[1];
-			}else{
-					//roll is leveled to max angle limit
-					angleerror[0] = errorvect[0] ; 
-					error[0] = apid(0) + yawerror[0] - gyro[0];
-					//pitch is acro 
-					error[1] = rxcopy[1] * (float) MAX_RATE * DEGTORAD - gyro[1];}
-			// yaw
-			error[2] = yawerror[2] - gyro[2];
-		
-	}else if(aux[RACEMODE] && aux[HORIZON]){	//racemode with horizon behavior on roll axis	
-			float inclinationRoll	= attitude[0];
-			float inclinationPitch = attitude[1];
-			float inclinationMax;
-			if (fabsf(inclinationRoll) >= fabsf(inclinationPitch)){
-					inclinationMax = fabsf(inclinationRoll);
-			}else{
-					inclinationMax = fabsf(inclinationPitch);}
-			float angleFade;
-			// constrains acroFade variable between 0 and 1
-			if (inclinationMax <= HORIZON_ANGLE_TRANSITION){
-					angleFade = inclinationMax/HORIZON_ANGLE_TRANSITION;
-			}else{
-					angleFade = 1;}
-			float stickFade;
-			float deflection = fabsf(rxcopy[0]);
-			if (deflection <= HORIZON_STICK_TRANSITION){
-					stickFade = deflection/HORIZON_STICK_TRANSITION;
-			}else{
-					stickFade = 1;}
-			float fade = (stickFade *(1-HORIZON_SLIDER))+(HORIZON_SLIDER * angleFade);
-			// apply acro to roll for inverted behavior
-			if (GEstG[2] < 0 ){
-					error[0] = rxcopy[0] * (float) MAX_RATE * DEGTORAD - gyro[0];
-					error[1] = rxcopy[1] * (float) MAX_RATE * DEGTORAD - gyro[1];
-			}else{ // apply a transitioning mix of acro and level behavior inside of stick HORIZON_TRANSITION point and full acro beyond stick HORIZON_TRANSITION point					
-					angleerror[0] = errorvect[0] ;
-					// roll angle strength fades out as sticks approach HORIZON_TRANSITION while acro stength fades in according to value of acroFade factor
-					error[0] = ((apid(0) + yawerror[0] - gyro[0]) * (1 - fade)) + (fade * (rxcopy[0] * (float) MAX_RATE * DEGTORAD - gyro[0]));
-					//pitch is acro
-					error[1] = rxcopy[1] * (float) MAX_RATE * DEGTORAD - gyro[1];
-			}
-	
-			// yaw
-			error[2] = yawerror[2]  - gyro[2];  
-		
-	}else if(!aux[RACEMODE] && aux[HORIZON]){ //horizon overrites standard level behavior	
-			//pitch and roll
-			for ( int i = 0 ; i <=1; i++){	
-			  	float inclinationRoll	= attitude[0];
-					float inclinationPitch = attitude[1];
-					float inclinationMax;
-					if (fabsf(inclinationRoll) >= fabsf(inclinationPitch)){
-						inclinationMax = fabsf(inclinationRoll);
-					}else{
-						inclinationMax = fabsf(inclinationPitch);}
-					float angleFade;
-					// constrains acroFade variable between 0 and 1
-					if (inclinationMax <= HORIZON_ANGLE_TRANSITION){
-						angleFade = inclinationMax/HORIZON_ANGLE_TRANSITION;
-					}else{
-						angleFade = 1;
-					}
-					float stickFade;
-					float deflection = fabsf(rxcopy[i]);
-					if (deflection <= HORIZON_STICK_TRANSITION){
-						stickFade = deflection/HORIZON_STICK_TRANSITION;
-					}else{
-						stickFade = 1;
-					}
-					float fade = (stickFade *(1-HORIZON_SLIDER))+(HORIZON_SLIDER * angleFade);
-					// apply acro to roll and pitch sticks for inverted behavior
-					if (GEstG[2] < 0 ){
-						error[i] = rxcopy[i] * (float) MAX_RATE * DEGTORAD - gyro[i];
-					}else{ // apply a transitioning mix of acro and level behavior inside of stick HORIZON_TRANSITION point and full acro beyond stick HORIZON_TRANSITION point					
-						angleerror[i] = errorvect[i] ;
-						//  angle strength fades out as sticks approach HORIZON_TRANSITION while acro stength fades in according to value of acroFade factor
-						error[i] = ((apid(i) + yawerror[i] - gyro[i]) * (1 - fade)) + (fade * (rxcopy[i] * (float) MAX_RATE * DEGTORAD - gyro[i]));
-					}
-			}
-			// yaw
-			error[2] = yawerror[2]  - gyro[2];  
-			
-	}else{ //standard level mode
-	    // pitch and roll
-			for ( int i = 0 ; i <=1; i++){
-					angleerror[i] = errorvect[i] ;    
-					error[i] = apid(i) + yawerror[i] - gyro[i];
-			}
-      // yaw
-			error[2] = yawerror[2]  - gyro[2];
-		}
-	}  
 	
 }
 
