@@ -45,8 +45,8 @@
 #define CH_EXPERT 1
 #define CH_HEADFREE 2
 #define CH_RTH 3
-#define CH_AUX1 4
-#define CH_GES_1 5
+#define CH_GES_1 4
+#define CH_AUX2 5
 #define CH_EMG 10
 #define CH_TO 11
 // trims numbers have to be sequential, start at CH_PIT_TRIM
@@ -102,7 +102,7 @@
 
 #ifdef USE_STOCK_TX
 #define CHAN_5 CH_EXPERT
-#define CHAN_6 CH_AUX1
+#define CHAN_6 CH_GES_1
 #define CHAN_7 CH_HEADFREE
 #define CHAN_8 CH_RLL_TRIM
 #define CHAN_9 CH_PIT_TRIM

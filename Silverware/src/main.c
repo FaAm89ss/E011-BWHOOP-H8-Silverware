@@ -185,7 +185,7 @@ clk_init();
 aux[CH_ON] = 1;	
 	
 #ifdef AUX1_START_ON
-aux[CH_AUX1] = 1;
+aux[CH_GES_1] = 1;
 #endif
 
 aux[LEDS_ON] = 1;

@@ -74,13 +74,13 @@ void gestures( void)
               
             if (command == GESTURE_RRD)
               {
-                  aux[CH_AUX1] = 1;
+                  aux[CH_GES_1] = 1;
                   ledcommand = 1;
               }
             if (command == GESTURE_LLD)
               {
                   ledcommand = 1;
-                  aux[CH_AUX1] = 0;
+                  aux[CH_GES_1] = 0;
               }
 							
 							
