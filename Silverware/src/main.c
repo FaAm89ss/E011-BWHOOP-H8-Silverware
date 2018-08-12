@@ -115,6 +115,7 @@ double acro_expo_roll = ACRO_EXPO_ROLL;
 double acro_expo_pitch = ACRO_EXPO_PITCH;
 double acro_expo_yaw = ACRO_EXPO_YAW;
 double throttle_expo = THROTTLE_EXPO;
+int setpointweightopt = 0;
 	
 // bind / normal rx mode
 extern int rxmode;

@@ -11,8 +11,8 @@
 // *************uncomment BWHOOP define for bwhoop, bwhoop pro, E011C Santa Edition, and Beta FPV Lite Flight Controllers
 // *************uncomment E011 define for E011 flight Controller
 // *************uncomment H8mini_blue_board for the H8 mini flight controller with blue circuit board
-//#define BWHOOP
-#define E011
+#define BWHOOP
+//#define E011
 //#define H8mini_blue_board
 //#define Alienwhoop_ZERO  // requires defining RX_SBUS radio protocol
 
@@ -66,8 +66,8 @@
 #define ACRO_EXPO_PITCH 0.85
 #define ACRO_EXPO_YAW 0.60
 
-#define ANGLE_EXPO_ROLL 0.55
-#define ANGLE_EXPO_PITCH 0.0
+#define ANGLE_EXPO_ROLL 0.4
+#define ANGLE_EXPO_PITCH 0.2
 #define ANGLE_EXPO_YAW 0.55
 
 // *************transmitter stick adjustable deadband for roll/pitch/yaw
@@ -102,7 +102,7 @@
 
 #define ARMING CHAN_5
 #define IDLE_UP CHAN_5
-#define IDLE_THR 0.0001f
+#define IDLE_THR 0.0009f
 
 #endif
 
@@ -180,7 +180,7 @@
 //#define BUZZER_ENABLE CHAN_OFF
 
 // *************start in level mode for toy tx.
-#define AUX1_START_ON
+//#define AUX1_START_ON
 
 // *************automatically remove center bias in toy tx ( needs throttle off for 1 second )
 #define STOCK_TX_AUTOCENTER
@@ -232,8 +232,8 @@
 // *************Select the appropriate filtering set for your craft's gyro, D-term, and motor output or select CUSTOM_FILTERING to pick your own values.  
 // *************If your throttle does not want to drop crisply and quickly when you lower the throttle stick, then move to a stronger filter set
 
-#define WEAK_FILTERING
-//#define STRONG_FILTERING
+//#define WEAK_FILTERING
+#define STRONG_FILTERING
 //#define VERY_STRONG_FILTERING
 //#define CUSTOM_FILTERING
 

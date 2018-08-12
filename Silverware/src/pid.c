@@ -112,8 +112,8 @@ float pidkd[PIDNUMBER] = { 7.4e-1 , 7.4e-1  , 5.5e-1 };
 // "setpoint weighting" 0.0 - 1.0 where 1.0 = normal pid
 #define ENABLE_SETPOINT_WEIGHTING
 //            Roll   Pitch   Yaw
-//float b[3] = { 0.97 , 0.98 , 0.95};   //RACE
-float b[3] = { 0.93 , 0.93 , 0.9};      //FREESTYLE
+float b1[3] = { 1.0 , 1.0 , 0.95};   //RACE
+//float b2[3] = { 0.93 , 0.93 , 0.9};      //FREESTYLE
 
 /// output limit			
 const float outlimit[PIDNUMBER] = { 1.7 , 1.7 , 0.5 };
@@ -149,7 +149,7 @@ extern float looptime;
 extern int in_air;
 extern char aux[AUXNUMBER + 6];
 extern float vbattfilt;
-
+extern int setpointweightopt;
 
 
 // multiplier for pids at 3V - for PID_VOLTAGE_COMPENSATION - default 1.33f from H101 code
@@ -230,9 +230,13 @@ float pid(int x )
     
     #ifdef ENABLE_SETPOINT_WEIGHTING
     // P term
-    pidoutput[x] = error[x] * ( b[x])* pidkp[x];				
-    // b
-    pidoutput[x] +=  - ( 1.0f - b[x])* pidkp[x] * gyro[x];
+		if (setpointweightopt == 0) {
+			pidoutput[x] = error[x] * ( b1[x])* pidkp[x];		
+			pidoutput[x] +=  - ( 1.0f - b1[x])* pidkp[x] * gyro[x];
+		} else {
+			pidoutput[x] = error[x] * ( b2[x])* pidkp[x];				
+			pidoutput[x] +=  - ( 1.0f - b2[x])* pidkp[x] * gyro[x];
+		}
     #else
     // P term with b disabled
     pidoutput[x] = error[x] * pidkp[x];
